@@ -44,3 +44,21 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+
+## TypeDoc documentation generator
+
+Code written in this project should be prefaced with a type doc annotation
+
+Example
+```typescript
+/**
+* Calculates the square root of a number.
+*
+* @param x the number to calculate the root of.
+* @returns the square root if `x` is non-negative or `NaN` if `x` is negative.
+*/
+export function sqrt(x: number): number {
+    return Math.sqrt(x);
+}
+```

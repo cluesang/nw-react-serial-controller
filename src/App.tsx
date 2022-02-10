@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { SerialDeviceController } from './controllers/SerialDeviceController';
 import logo from './logo.svg';
 import './App.css';
+import { inheritInnerComments } from '@babel/types';
 
-function App() {
+console.log(SerialDeviceController.listPorts());
+
+const App = () => {
+  
+  useEffect(()=>{
+    init();
+  },[]);
+
+  const init = async() => 
+  {
+    const ports = await SerialDeviceController.listPorts();
+    console.log(ports);
+  }
+
   return (
     <div className="App">
       <header className="App-header">
