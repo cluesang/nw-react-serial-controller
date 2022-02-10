@@ -24,10 +24,6 @@
     "test": "nw-react-scripts test",
     "eject": "nw-react-scripts eject"
   },
-  "jest": {
-    "testEnvironment": "jest-environment-nwjs",
-    "globalTeardown": "jest-environment-nwjs/teardown"
-  },
   "eslintConfig": {
     "extends": [
       "nw-react-app",
@@ -61,8 +57,9 @@
     "macIcns": "./src/logo.icns"
   },
   "devDependencies": {
+    "@types/sinon-chrome": "^2.2.11",
     "jest-chrome": "^0.7.2",
     "jest-environment-nwjs": "^25.1.0",
-    "node-nw": "^0.5.3"
+    "sinon-chrome": "^3.0.1"
   }
 }

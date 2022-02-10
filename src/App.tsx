@@ -4,8 +4,6 @@ import logo from './logo.svg';
 import './App.css';
 import { inheritInnerComments } from '@babel/types';
 
-console.log(SerialDeviceController.listPorts());
-
 const App = () => {
   
   useEffect(()=>{

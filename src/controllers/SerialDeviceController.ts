@@ -1,4 +1,15 @@
-import { chrome } from 'jest-chrome'
+let connectionOptions = {
+    bitrate: 115200,
+    bufferSize: 4096,
+    ctsFlowControl: false,
+    dataBits: "eight",
+    name: "",
+    parityBit: "no",
+    persistent: false,
+    receiveTimeout: 0, //at 0, no timeout error will be raised.
+    sendTimeout: 0 , // at 0 no time out errors will be sent
+    stopBits: "one"
+}
 
 class SerialDeviceController 
 {
@@ -7,22 +18,37 @@ class SerialDeviceController
      * @param 
      * @returns (async) ports of type DeviceInfo
      */
-    static listPorts()
+    static async listPorts()
     {
+        // const devices = await navigator.usb.getDevices();
+        // return devices;
+
         return new Promise((resolve, reject)=>{
-            chrome.serial.getDevices((ports)=>{
-                resolve(ports);
-            });
+            try {
+                
+                // chrome.serial.getDevices((ports)=>{
+                //     resolve(ports);
+                // });
+                resolve([{path: '/dev/ttyS4'}]);
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
-    // connect to a port
-
-    // send data to a port
-
-
-    constructor() {
+    constructor() 
+    {
         
+    }
+
+    connect()
+    {
+
+    }
+
+    disconnect()
+    {
+
     }
 };
 
