@@ -18,14 +18,13 @@ class SerialDeviceController
      * @param 
      * @returns (async) ports of type DeviceInfo
      */
-    static async listPorts()
+    static async listPorts(): Promise
     {
         // const devices = await navigator.usb.getDevices();
         // return devices;
 
         return new Promise((resolve, reject)=>{
             try {
-                
                 // chrome.serial.getDevices((ports)=>{
                 //     resolve(ports);
                 // });
