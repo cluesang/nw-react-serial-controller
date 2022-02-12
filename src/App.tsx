@@ -1,10 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { 
+  Button
+, Offcanvas
+, OffcanvasHeader
+, OffcanvasBody } from 'reactstrap';
+import TerminalController from './components/TerminalController';
 import { SerialDeviceController } from './controllers/SerialDeviceController';
-import logo from './logo.svg';
 import './App.css';
-import { inheritInnerComments } from '@babel/types';
 
 const App = () => {
+
+  const [openCanvas, setOpenCanvas ] = useState(false);
+  const toggleCanvas = () => setOpenCanvas(!openCanvas);
   
   useEffect(()=>{
     init();
@@ -18,20 +25,26 @@ const App = () => {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div>
+      <Button
+        color="primary"
+        onClick={toggleCanvas}
+      >
+        Open
+      </Button>
+      <Offcanvas
+        direction="bottom"
+        toggle={toggleCanvas}
+        isOpen={openCanvas}
+      >
+        <OffcanvasHeader toggle={toggleCanvas}>
+          Terminal
+        </OffcanvasHeader>
+        <OffcanvasBody>
+          <TerminalController/>
+        </OffcanvasBody>
+      </Offcanvas>
+    </div>
     </div>
   );
 }

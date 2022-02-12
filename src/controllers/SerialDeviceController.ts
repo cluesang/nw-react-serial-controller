@@ -18,7 +18,7 @@ class SerialDeviceController
      * @param 
      * @returns (async) ports of type DeviceInfo
      */
-    static async listPorts(): Promise
+    static async listPorts()
     {
         // const devices = await navigator.usb.getDevices();
         // return devices;
