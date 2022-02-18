@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  Button
+  Row
+, Button
 , Offcanvas
 , OffcanvasHeader
-, OffcanvasBody } from 'reactstrap';
+, OffcanvasBody 
+, Alert
+} from 'reactstrap';
+import { SerialPortList, SerialPortConnection, SerialPortMonitor} from './components/SerialUIComponents';
 import TerminalController from './components/TerminalController';
 import { SerialDeviceController } from './controllers/SerialDeviceController';
 import './App.css';
@@ -11,6 +15,10 @@ import './App.css';
 const App = () => {
 
   const [openCanvas, setOpenCanvas ] = useState(false);
+  const [disablePortList, setDisablePortList ] = useState(false);
+  const [alertMessage, setAlertMessage ] = useState<string|undefined>();
+  const [serialDeviceInfo, setSerialDeviceInfo] = useState<chrome.serial.DeviceInfo|undefined>();
+  const [serialConnectionInfo, setSerialConnectionInfo] = useState<chrome.serial.ConnectionInfo|undefined>();
   const toggleCanvas = () => setOpenCanvas(!openCanvas);
   
   useEffect(()=>{
@@ -19,19 +27,61 @@ const App = () => {
 
   const init = async() => 
   {
-    const ports = await SerialDeviceController.listPorts();
-    console.log(ports);
+    
+  }
+
+  const onSerialPortSelect = (deviceInfo: chrome.serial.DeviceInfo) =>
+  {
+    console.log(deviceInfo);
+    setSerialDeviceInfo(deviceInfo);
+  }
+
+  const onSerialPortConnect = (connectionInfo: chrome.serial.ConnectionInfo) =>
+  {
+    console.log(connectionInfo);
+    setSerialConnectionInfo(connectionInfo);
+    setDisablePortList(true);
+  }
+
+  const onSerialPortDisconnect = (result: boolean) =>
+  {
+    console.log(result);
+    setSerialConnectionInfo(undefined);
+    setDisablePortList(false);
+  }
+
+  const onError = (msg: string) =>
+  {
+    console.log(msg);
+    setAlertMessage(msg);
   }
 
   return (
     <div className="App">
       <div>
-      <Button
-        color="primary"
-        onClick={toggleCanvas}
-      >
-        Open
-      </Button>
+        <Row>
+          <Alert>
+              {alertMessage}
+          </Alert>
+          <Button
+            color="primary"
+            onClick={toggleCanvas}
+          >
+            Open Monitor
+          </Button>
+          <SerialPortConnection 
+            onConnect={onSerialPortConnect} 
+            onDisconnect={onSerialPortDisconnect} 
+            onError={onError}
+            serialDeviceInfo={serialDeviceInfo}
+            serialConnectionInfo={serialConnectionInfo}
+          />
+          <SerialPortList 
+            disabled={disablePortList}
+            onSelect={onSerialPortSelect} 
+            onError={onError}
+          />
+        </Row>
       <Offcanvas
         direction="bottom"
         toggle={toggleCanvas}
@@ -41,7 +91,7 @@ const App = () => {
           Terminal
         </OffcanvasHeader>
         <OffcanvasBody>
-          <TerminalController/>
+          <SerialPortMonitor />
         </OffcanvasBody>
       </Offcanvas>
     </div>
