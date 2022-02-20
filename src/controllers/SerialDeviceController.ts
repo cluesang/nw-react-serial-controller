@@ -11,8 +11,35 @@ let connectionOptions: chrome.serial.ConnectionOptions = {
     stopBits: "one"
 }
 
+export function arrayBufferToString(buf:ArrayBuffer):string
+{
+    const charArray = new Uint8Array(buf) as unknown as number[];
+    return String.fromCharCode.apply(null, charArray);
+};
+
+export function stringToArrayBuffer(str:string):ArrayBuffer
+{
+    if (str === undefined) {
+        str = "";
+    }
+    var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
+    var bufView = new Uint8Array(buf);
+    for (var i = 0, strLen = str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+};
+
 class SerialDeviceController 
 {
+    #port:chrome.serial.DeviceInfo;
+    #connectionInfo:chrome.serial.ConnectionInfo|undefined;
+
+    constructor(serialPort:chrome.serial.DeviceInfo) 
+    {
+        this.#port = serialPort;
+    }
+
     /**
      * returns list of serial ports
      * @param 
@@ -26,17 +53,9 @@ class SerialDeviceController
                     return resolve(ports);
                 });
             } catch (error) {
-                return reject(error);
+                return reject(new Error(<string>error));
             }
         });
-    }
-
-    #port:chrome.serial.DeviceInfo;
-    #connectionInfo:chrome.serial.ConnectionInfo|undefined;
-
-    constructor(serialPort:chrome.serial.DeviceInfo) 
-    {
-        this.#port = serialPort;
     }
 
     static async connect(serialDevice:chrome.serial.DeviceInfo):Promise<chrome.serial.ConnectionInfo>
@@ -44,7 +63,16 @@ class SerialDeviceController
         return new Promise<chrome.serial.ConnectionInfo>((resolve, reject)=>{
             try {
                 chrome.serial.connect(serialDevice.path, connectionOptions, (connectionInfo)=>{
-                    resolve(connectionInfo);
+                    if(connectionInfo === undefined) reject("Could not establish a connection. \
+                    Check that your OS has drivers installed \
+                    and/or has granted the user permission to connect to the USB device. ");
+                    if(chrome.runtime.lastError?.message === "Failed to connect to the port")
+                    {
+                        console.log(chrome.runtime.lastError?.message);
+                        throw new Error(chrome.runtime.lastError?.message);
+                    } else {
+                        resolve(connectionInfo);
+                    }
                 });
             } catch (error) {
                 return reject(error);
@@ -67,6 +95,31 @@ class SerialDeviceController
                 return reject(error);
             }
         });
+    }
+
+    static addListener(callback:(successStatus:boolean,id:number,message:string)=>void)
+    {
+        chrome.serial.onReceive.addListener(({connectionId,data})=>{
+            const read = arrayBufferToString(data);
+            callback(true,connectionId,read);
+        });
+
+        const device_lost_buffer_msg = stringToArrayBuffer("device_lost");
+        chrome.serial.onReceiveError.addListener(({connectionId, error})=>{
+            if(error === device_lost_buffer_msg)
+            {
+                setTimeout(()=>{
+                    chrome.serial.setPaused(connectionId,false,()=>
+                    {
+                       console.log("polled");
+                    });
+                },1000);
+            } else {
+                const error_msg = arrayBufferToString(error)
+                callback(false,connectionId,error_msg);
+            }
+        })
+        
     }
 
 };

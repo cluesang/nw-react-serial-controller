@@ -44,39 +44,37 @@ const SerialPortList = ({ onSelect, disabled=false, onError }:iSerialPortList) =
     }
 
     return (
-    <span>
-        <ButtonDropdown 
-            disabled={disabled}
-            isOpen={open} 
-            toggle={toggleOpen} 
-            setActiveFromChild={true}
-            onClick={dropdownClick}
+    <ButtonDropdown 
+        disabled={disabled}
+        isOpen={open} 
+        toggle={toggleOpen} 
+        setActiveFromChild={true}
+        onClick={dropdownClick}
+        >
+        <DropdownToggle caret>
+            {(activePort)?activePort.path:"Select Serial Port"}
+        </DropdownToggle>
+        <DropdownMenu style={{ maxHeight: "150px", overflow: "hidden scroll" }} >
+            <DropdownItem 
+                key={0} 
+                header={true}
+                onClick={()=>setActivePort(undefined)}
             >
-            <DropdownToggle caret>
-                {(activePort)?activePort.path:"Select Serial Port"}
-            </DropdownToggle>
-            <DropdownMenu style={{ maxHeight: "150px", overflow: "hidden scroll" }} >
-                <DropdownItem 
-                    key={0} 
-                    header={true}
-                    onClick={()=>setActivePort(undefined)}
-                >
-                    USB Serial Ports
-                </DropdownItem>
-                {ports.map((port, index)=>{
-                    return (
-                        <DropdownItem 
-                            active={(activePort===port)}
-                            key={index+1} 
-                            onClick={()=>selectPort(port)}
-                        >
-                            {port.path}
-                        </DropdownItem>
-                    );
-                })}
-            </DropdownMenu>
-        </ButtonDropdown>
-    </span>
+                USB Serial Ports
+            </DropdownItem>
+            {ports.map((port, index)=>{
+                return (
+                    <DropdownItem 
+                        active={(activePort===port)}
+                        key={index+1} 
+                        onClick={()=>selectPort(port)}
+                    >
+                        {port.path}
+                    </DropdownItem>
+                );
+            })}
+        </DropdownMenu>
+    </ButtonDropdown>
     );
 }
 
@@ -107,7 +105,9 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
             {
                 disconnect(serialConnectionInfo);
             } else {
-                onError("Could not disconnect. No connection info provided.");
+                onError("Could not properly disconnect. No previous connection info found.");
+                onDisconnect(true);
+                setIsConnected(false);
             }
         }
     } 
@@ -120,6 +120,8 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
             setIsConnected(true);
         } catch (error) {
             console.log(error);
+            const message:string = error as string;
+            onError(message);
         }
     }
 
@@ -135,18 +137,16 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
     }
 
     return (
-    <span>
-        <Form inline className={"btn-group m1"}>
-            <FormGroup switch>
-                <Input 
-                    checked={isConnected}
-                    style={{ width: "4em", height: "2em"}} 
-                    type={"switch"} 
-                    onChange={toggleConnection} 
-                />
-            </FormGroup>
-        </Form>
-    </span>
+    <Form inline className={"btn-group px-2"}>
+        <FormGroup switch>
+            <Input 
+                checked={isConnected}
+                style={{ width: "4em", height: "2em"}} 
+                type={"switch"} 
+                onChange={toggleConnection} 
+            />
+        </FormGroup>
+    </Form>
     );
 }
 
@@ -170,8 +170,8 @@ const SerialPortMonitor = ({ lineData }:iSerialPortMonitor) =>
 
     return (
         <Terminal 
-        name='React Terminal Usage Example' 
-        colorMode={ ColorMode.Light }  
+        name='Serial Monitor' 
+        colorMode={ ColorMode.Dark }  
         lineData={ terminalLineData } 
         onInput={ 
           terminalInput => 
