@@ -7,12 +7,9 @@ import {
 , Offcanvas
 , OffcanvasHeader
 , OffcanvasBody 
-, Toast
-, ToastHeader
-, ToastBody
 , Alert
 } from 'reactstrap';
-import { SerialPortList, SerialPortConnection, SerialPortMonitor} from './components/SerialUIComponents';
+import { SerialPortList, SerialPortConnection, SerialPortMonitor, SerialReader, SerialSender} from './components/SerialUIComponents';
 import { SerialDeviceController } from './controllers/SerialDeviceController';
 import './App.css';
 
@@ -23,7 +20,7 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse)=>{
 const App = () => {
 
   const [openCanvas, setOpenCanvas ] = useState(false);
-  const [disablePortList, setDisablePortList ] = useState(false);
+  const [isConnected, setIsConnected ] = useState(false);
   const [alertMessage, setAlertMessage ] = useState<string|undefined>();
   const [serialDeviceInfo, setSerialDeviceInfo] = useState<chrome.serial.DeviceInfo|undefined>();
   const [serialConnectionInfo, setSerialConnectionInfo] = useState<chrome.serial.ConnectionInfo|undefined>();
@@ -46,11 +43,6 @@ const App = () => {
 
   const init = async() => 
   {
-    SerialDeviceController.addListener((successStatus,connectionId,message)=>{
-      // if(message.length===0)return
-      console.log(successStatus,connectionId,message);
-      setSeriallineData(seriallineData=>[...seriallineData,message]);
-    });
   }
 
   const onSerialPortSelect = (deviceInfo: chrome.serial.DeviceInfo) =>
@@ -63,20 +55,30 @@ const App = () => {
   {
     console.log(connectionInfo);
     setSerialConnectionInfo(connectionInfo);
-    setDisablePortList(true);
+    setIsConnected(true);
   }
 
   const onSerialPortDisconnect = (result: boolean) =>
   {
     console.log(result);
     setSerialConnectionInfo(undefined);
-    setDisablePortList(false);
+    setIsConnected(false);
+  }
+
+  const onSerialInput = (input:string) =>
+  {
+    console.log(input);
+  }
+
+  const onSerialSend = (sendInfo:object) =>
+  {
+    console.log(sendInfo);
   }
 
   const onError = (msg: string) =>
   {
     console.log(msg);
-    alertUser(msg);
+    if(msg.length>0) alertUser(msg);
   }
 
   return (
@@ -95,7 +97,7 @@ const App = () => {
           </Col>
         </Row>
         <Row xs={"4"}>
-          <Col sm={"3"} >
+          <Col sm={"3"} className={"d-flex justify-content-end"}>
             <SerialPortConnection
               onConnect={onSerialPortConnect} 
               onDisconnect={onSerialPortDisconnect} 
@@ -104,17 +106,30 @@ const App = () => {
               serialConnectionInfo={serialConnectionInfo}
             />
             <SerialPortList 
-              disabled={disablePortList}
               onSelect={onSerialPortSelect} 
+              isConnected={isConnected}
               onError={onError}
             />
           </Col>
-          <Col sm={"8"} >
-            
+          <Col sm={"4"} >
+            <SerialReader 
+              connectionId={serialConnectionInfo?.connectionId}
+              onSerialInput={onSerialInput}
+              onError={onError}
+            />
           </Col>
-          <Col sm={"1"} >
+          <Col sm={"4"} >
+            <SerialSender
+              connectionId={serialConnectionInfo?.connectionId}
+              onSerialSend={onSerialSend}
+              onError={onError}
+            />
+          </Col>
+          <Col sm={"1"} className={"my-2"} >
             <Button
-              color="primary"
+              color={(isConnected)?"primary":"secondary"}
+              className={(!isConnected)?"muted":""}
+              disabled={!isConnected}
               onClick={toggleCanvas}
             >
               Monitor
@@ -127,12 +142,17 @@ const App = () => {
         toggle={toggleCanvas}
         isOpen={openCanvas}
         style={{width: "50vw"}}
+        unmountOnClose={false}
       >
         <OffcanvasHeader toggle={toggleCanvas}>
           Monitor
         </OffcanvasHeader>
         <OffcanvasBody>
-          <SerialPortMonitor lineData={seriallineData}/>
+          <SerialPortMonitor 
+            connectionId={serialConnectionInfo?.connectionId}
+            onSerialInput={onSerialInput}
+            onError={onError}
+            />
         </OffcanvasBody>
       </Offcanvas>
     </div>

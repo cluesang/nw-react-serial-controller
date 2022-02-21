@@ -65,7 +65,7 @@ class SerialDeviceController
                 chrome.serial.connect(serialDevice.path, connectionOptions, (connectionInfo)=>{
                     if(connectionInfo === undefined) reject("Could not establish a connection. \
                     Check that your OS has drivers installed \
-                    and/or has granted the user permission to connect to the USB device. ");
+                    and/or has granted the user permission to connect to the serial device. ");
                     if(chrome.runtime.lastError?.message === "Failed to connect to the port")
                     {
                         console.log(chrome.runtime.lastError?.message);
@@ -122,6 +122,21 @@ class SerialDeviceController
         
     }
 
+    static async send(connectionId:number,message:string):Promise<object>
+    {
+        const sendBuffer = stringToArrayBuffer(message);
+        return new Promise<object>((resolve,reject)=>{
+            try {
+                chrome.serial.send(connectionId,sendBuffer,(sendInfo)=>
+                {
+                   resolve(sendInfo);
+                });
+            } catch (error) {
+                reject(error);
+            }
+           
+        });        
+    }
 };
 
 export { SerialDeviceController };

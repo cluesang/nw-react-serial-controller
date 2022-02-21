@@ -10,15 +10,17 @@ import {
 ,   FormGroup
 ,   Form
 ,   Input
+,   Row
+,   Button
 } from 'reactstrap';
 
 interface iSerialPortList {
     onSelect: (selectedPort:chrome.serial.DeviceInfo)=>void;
-    disabled?: boolean;
+    isConnected?: boolean;
     onError:  (msg:string)=>void;
 }
 
-const SerialPortList = ({ onSelect, disabled=false, onError }:iSerialPortList) =>
+const SerialPortList = ({ onSelect, isConnected=false, onError }:iSerialPortList) =>
 {
     const [open, setOpen ] = useState(false);
     const [ports, setPorts] = useState([{path:"Select"}]);
@@ -36,7 +38,7 @@ const SerialPortList = ({ onSelect, disabled=false, onError }:iSerialPortList) =
     }
     const dropdownClick = () =>
     {
-        if(disabled)
+        if(isConnected)
         {
             onError("You must disconnect from the current port before you can select a new one.");
         }
@@ -45,13 +47,16 @@ const SerialPortList = ({ onSelect, disabled=false, onError }:iSerialPortList) =
 
     return (
     <ButtonDropdown 
-        disabled={disabled}
+        className="btn"
+        disabled={isConnected}
         isOpen={open} 
         toggle={toggleOpen} 
         setActiveFromChild={true}
         onClick={dropdownClick}
         >
-        <DropdownToggle caret>
+        <DropdownToggle 
+            className={(isConnected)?"bg-success text-white":"bg-secondary text-white"}
+        caret>
             {(activePort)?activePort.path:"Select Serial Port"}
         </DropdownToggle>
         <DropdownMenu style={{ maxHeight: "150px", overflow: "hidden scroll" }} >
@@ -90,6 +95,10 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
 {
     const [isConnected, setIsConnected ] = useState(false);
 
+    useEffect(()=>{
+        toggleConnection();
+    },[serialDeviceInfo])
+
     const toggleConnection = async () =>
     {
         if(!isConnected)
@@ -98,7 +107,7 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
             {
                connect(serialDeviceInfo);
             } else {
-                onError("Could not connect. No serial device selected.");
+                // onError("Could not connect. No serial device selected.");
             }
         } else {
             if(serialConnectionInfo !== undefined)
@@ -133,12 +142,14 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
             setIsConnected(false);
         } catch (error) {
             console.log(error);
+            const message:string = error as string;
+            onError(message);
         }
     }
 
     return (
-    <Form inline className={"btn-group px-2"}>
-        <FormGroup switch>
+    <Form inline className={"btn-group p-2"}>
+        <FormGroup switch={true}>
             <Input 
                 checked={isConnected}
                 style={{ width: "4em", height: "2em"}} 
@@ -151,33 +162,168 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
 }
 
 interface iSerialPortMonitor {
-    lineData?: string[]
+    connectionId?: number;
+    onSerialInput: (output:string)=>void;
+    onError: (output:string)=>void;
 }
 
-const SerialPortMonitor = ({ lineData }:iSerialPortMonitor) =>
+const SerialPortMonitor = ({ connectionId, onSerialInput, onError }:iSerialPortMonitor) =>
 {
+    const connectionName = (connectionId)? connectionId : "All"
     const [terminalLineData, setTerminalLineData] = useState([
-        {type: LineType.Output, value: 'Welcome to the React Terminal UI Demo!'},
-        {type: LineType.Input, value: 'Some previous input received'},
+        {type: LineType.Output, value: 'Listening to connection: '+connectionName}
       ]);
 
     useEffect(()=>{
-        const terminalLines = (lineData||[]).map((line)=>{
-            return {type: LineType.Output, value: line}
-        });
-        setTerminalLineData(terminalLines);
-    },[lineData])
+        SerialDeviceController.addListener((successStatus,connectionId,message)=>{
+            // console.log(successStatus,connectionId,message);
+            if(!successStatus) onError(message);
+            let newLine = {type: LineType.Output, value: ""};
+            if(connectionId)
+            {
+                newLine.value = message
+            } else {
+                if(connectionId === connectionId)
+                {
+                    newLine.value = message;
+                    onSerialInput(message);
+                }
+            }
+            setTerminalLineData(terminalLineData => [...terminalLineData, newLine]);
+          });
+    },[]);
+
+    // on connectionId update.
+    useEffect(()=>{
+        setTerminalLineData([]);
+    },[connectionId]);
+
+    const send = async (input:string) => {
+        try {
+            if(connectionId)
+            {   
+                const sendInfo = await SerialDeviceController.send(connectionId,input);
+                let newLine = {type: LineType.Input, value: input};
+                setTerminalLineData(terminalLineData => [...terminalLineData, newLine]);
+                // onSerialSend(sendInfo);
+            } else {
+                onError("Can't send. Serial connection must exist.");
+            }
+        } catch (error) {
+            console.log(error);
+            const message:string = error as string;
+            onError(message);
+        }
+    }
 
     return (
         <Terminal 
         name='Serial Monitor' 
         colorMode={ ColorMode.Dark }  
         lineData={ terminalLineData } 
-        onInput={ 
-          terminalInput => 
-          console.log(`New terminal input received: '${ terminalInput }'`) 
-        }/>
+        prompt={">"}
+        onInput={send}/>
     );
 }
 
-export { SerialPortList, SerialPortConnection, SerialPortMonitor };
+interface iSerialReader {
+    connectionId?: number;
+    onSerialInput: (reading:string)=>void;
+    onError: (output:string)=>void;
+}
+
+const SerialReader = ({ connectionId, onSerialInput, onError }:iSerialReader) =>
+{
+    const [readingBuffer, setReadingBuffer] = useState<string>("");
+
+    // init
+    useEffect(()=>{
+        SerialDeviceController.addListener((successStatus,connectionId,message)=>{
+            // console.log(successStatus,connectionId,message);
+            if(!successStatus) onError(message);
+            if(connectionId === connectionId) 
+            {
+                onSerialInput(message);
+                setReadingBuffer(readingBuffer => readingBuffer+message);
+            }
+          });
+    },[]);
+
+    // on connectionId update.
+    useEffect(()=>{
+        setReadingBuffer("");
+    },[connectionId]);
+
+    const output = readingBuffer.split("\r\n").filter(line=> line.length>0);
+    const lastReading = output[output.length-1];
+    return (
+        <Row className="my-3">
+            {lastReading}
+        </Row>
+    );
+}
+
+interface iSerialSender {
+    connectionId?: number;
+    onSerialSend: (sendInfo:object)=>void;
+    onError: (output:string)=>void;
+}
+
+const SerialSender = ({ connectionId, onSerialSend, onError }:iSerialSender) =>
+{
+    const [sendMessage, setSendMessage] = useState<string>("");
+
+    const send = async () => {
+        try {
+            if(connectionId)
+            {   
+                const sendInfo = await SerialDeviceController.send(connectionId,sendMessage);
+                onSerialSend(sendInfo);
+            } else {
+                onError("Can't send. Serial connection must exist.");
+            }
+        } catch (error) {
+            console.log(error);
+            const message:string = error as string;
+            onError(message);
+        }
+    }
+
+    // on connectionId update.
+    useEffect(()=>{
+        setSendMessage("");
+    },[connectionId]);
+
+    return (
+        <div className="input-group my-2">
+            <Input
+                id="sendMessage"
+                className={"form-control"}
+                aria-label="Recipient's username" 
+                aria-describedby="basic-addon2"
+                placeholder="Send"
+                value={sendMessage}
+                onChange={e => setSendMessage(e.target.value)}
+                type="text"
+            />
+            <div className="input-group-append">
+                <Button 
+                    className={(connectionId)?"btn btn-primary":"btn btn-secondary"}
+                    onClick={send}
+                    disabled={!connectionId}
+                >
+                    Submit
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+
+export { 
+    SerialPortList
+,   SerialPortConnection
+,   SerialPortMonitor 
+,   SerialReader
+,   SerialSender
+};
