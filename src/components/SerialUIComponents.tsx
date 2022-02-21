@@ -167,7 +167,9 @@ const SerialPortMonitor = ({ connectionId, onSerialInput, onError }: iSerialPort
         { type: LineType.Output, value: 'Listening to connection: ' + connectionName }
     ]);
 
+    // on connectionId update.
     useEffect(() => {
+        setTerminalLineData([]);
         SerialDeviceController.addListener((successStatus, connectionId, message) => {
             // console.log(successStatus,connectionId,message);
             if (!successStatus) onError(message);
@@ -182,11 +184,6 @@ const SerialPortMonitor = ({ connectionId, onSerialInput, onError }: iSerialPort
             }
             setTerminalLineData(terminalLineData => [...terminalLineData, newLine]);
         });
-    }, []);
-
-    // on connectionId update.
-    useEffect(() => {
-        setTerminalLineData([]);
     }, [connectionId]);
 
     const send = async (input: string) => {
@@ -309,20 +306,10 @@ interface iSerialManager {
 const SerialManager = ({onError}:iSerialManager) => {
     const [openCanvas, setOpenCanvas] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
-    // const [alertMessage, setAlertMessage] = useState<string | undefined>();
     const [serialDeviceInfo, setSerialDeviceInfo] = useState<chrome.serial.DeviceInfo | undefined>();
     const [connectionId, setConnectionId] = useState<number>();
     const [serialConnectionInfo, setSerialConnectionInfo] = useState<chrome.serial.ConnectionInfo | undefined>();
-    // const [showNotifications, setShowNotifications] = useState(false);
     const toggleCanvas = () => setOpenCanvas(!openCanvas);
-
-    // const alertUser = (message: string) => {
-    //     setShowNotifications(true);
-    //     setAlertMessage(message);
-    //     setTimeout(() => setShowNotifications(false), 7500);
-    // }
-
-    // const toggleNotification = () => setShowNotifications(!showNotifications);
 
     useEffect(()=>{
         if(serialConnectionInfo)
@@ -357,11 +344,6 @@ const SerialManager = ({onError}:iSerialManager) => {
     const onSerialSend = (sendInfo: object) => {
         console.log(sendInfo);
     }
-
-    // const onError = (msg: string) => {
-    //     console.log(msg);
-    //     if (msg.length > 0) alertUser(msg);
-    // }
 
     return (
         <Container>
