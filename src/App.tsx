@@ -35,6 +35,21 @@ const App = () => {
       if (msg.length > 0) alertUser(msg);
   }
 
+  const onConnect = (connectionInfo: chrome.serial.ConnectionInfo) =>
+  {
+    console.log(connectionInfo);
+  }
+
+  const onDisconnect = (result: boolean) =>
+  {
+    console.log(result);
+  }
+
+  const onData = (connectionId:number, data: string) =>
+  {
+    console.log(connectionId,data);
+  }
+
   return (
     <div className="App">
       <Row>
@@ -49,8 +64,18 @@ const App = () => {
                   </Alert>}
           </Col>
       </Row>
-      <SerialManager onError={onError}/>
-      <SerialManager onError={onError}/>
+      <SerialManager 
+        onConnect={onConnect}
+        onDisconnect={onDisconnect}
+        onData={onData}
+        onError={onError}
+        />
+      <SerialManager 
+        onConnect={onConnect}
+        onDisconnect={onDisconnect}
+        onData={onData}
+        onError={onError}
+        />
     </div>
   );
 }

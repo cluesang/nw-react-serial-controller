@@ -23,7 +23,7 @@ import {
 interface iSerialPortList {
     onSelect: (selectedPort: chrome.serial.DeviceInfo) => void;
     isConnected?: boolean;
-    onError: (msg: string) => void;
+    onError?: (msg: string) => void;
 }
 
 const SerialPortList = ({ onSelect, isConnected = false, onError }: iSerialPortList) => {
@@ -41,7 +41,7 @@ const SerialPortList = ({ onSelect, isConnected = false, onError }: iSerialPortL
     }
     const dropdownClick = () => {
         if (isConnected) {
-            onError("You must disconnect from the current port before you can select a new one.");
+            if(onError) onError("You must disconnect from the current port before you can select a new one.");
         }
         console.log("dropdown click");
     }
@@ -87,7 +87,7 @@ const SerialPortList = ({ onSelect, isConnected = false, onError }: iSerialPortL
 interface iSerialPortConnection {
     onConnect: (selectedPort: chrome.serial.ConnectionInfo) => void;
     onDisconnect: (result: boolean) => void;
-    onError: (msg: string) => void;
+    onError?: (msg: string) => void;
     serialDeviceInfo?: chrome.serial.DeviceInfo;
     serialConnectionInfo?: chrome.serial.ConnectionInfo;
 }
@@ -110,7 +110,7 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
             if (serialConnectionInfo !== undefined) {
                 disconnect(serialConnectionInfo);
             } else {
-                onError("Could not properly disconnect. No previous connection info found.");
+                if(onError) onError("Could not properly disconnect. No previous connection info found.");
                 onDisconnect(true);
                 setIsConnected(false);
             }
@@ -125,7 +125,7 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
         } catch (error) {
             console.log(error);
             const message: string = error as string;
-            onError(message);
+            if(onError) onError(message);
         }
     }
 
@@ -137,7 +137,7 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
         } catch (error) {
             console.log(error);
             const message: string = error as string;
-            onError(message);
+            if(onError) onError(message);
         }
     }
 
@@ -158,7 +158,7 @@ const SerialPortConnection = ({ onConnect, onDisconnect, serialDeviceInfo, seria
 interface iSerialPortMonitor {
     connectionId?: number;
     onSerialInput: (output: string) => void;
-    onError: (output: string) => void;
+    onError?: (output: string) => void;
 }
 
 const SerialPortMonitor = ({ connectionId, onSerialInput, onError }: iSerialPortMonitor) => {
@@ -172,7 +172,7 @@ const SerialPortMonitor = ({ connectionId, onSerialInput, onError }: iSerialPort
         setTerminalLineData([]);
         SerialDeviceController.addListener((successStatus, connectionId, message) => {
             // console.log(successStatus,connectionId,message);
-            if (!successStatus) onError(message);
+            if (!successStatus) if(onError) onError(message);
             let newLine = { type: LineType.Output, value: "" };
             if (connectionId) {
                 newLine.value = message
@@ -194,12 +194,12 @@ const SerialPortMonitor = ({ connectionId, onSerialInput, onError }: iSerialPort
                 setTerminalLineData(terminalLineData => [...terminalLineData, newLine]);
                 // onSerialSend(sendInfo);
             } else {
-                onError("Can't send. Serial connection must exist.");
+                if(onError) onError("Can't send. Serial connection must exist.");
             }
         } catch (error) {
             console.log(error);
             const message: string = error as string;
-            onError(message);
+            if(onError) onError(message);
         }
     }
 
@@ -216,7 +216,7 @@ const SerialPortMonitor = ({ connectionId, onSerialInput, onError }: iSerialPort
 interface iSerialReader {
     connectionId?: number;
     onSerialInput: (reading: string) => void;
-    onError: (output: string) => void;
+    onError?: (output: string) => void;
 }
 
 const SerialReader = ({ connectionId, onSerialInput, onError }: iSerialReader) => {
@@ -228,7 +228,7 @@ const SerialReader = ({ connectionId, onSerialInput, onError }: iSerialReader) =
         SerialDeviceController.addListener((successStatus, incommingConnectionId, message) => {
             // console.log(successStatus,connectionId,message);
             console.log(connectionId, incommingConnectionId);
-            if (!successStatus) onError(message);
+            if (!successStatus) if(onError) onError(message);
             if (connectionId === incommingConnectionId) {
                 onSerialInput(message);
                 setReadingBuffer(readingBuffer => readingBuffer + message);
@@ -248,7 +248,7 @@ const SerialReader = ({ connectionId, onSerialInput, onError }: iSerialReader) =
 interface iSerialSender {
     connectionId?: number;
     onSerialSend: (sendInfo: object) => void;
-    onError: (output: string) => void;
+    onError?: (output: string) => void;
 }
 
 const SerialSender = ({ connectionId, onSerialSend, onError }: iSerialSender) => {
@@ -260,12 +260,12 @@ const SerialSender = ({ connectionId, onSerialSend, onError }: iSerialSender) =>
                 const sendInfo = await SerialDeviceController.send(connectionId, sendMessage);
                 onSerialSend(sendInfo);
             } else {
-                onError("Can't send. Serial connection must exist.");
+                if(onError) onError("Can't send. Serial connection must exist.");
             }
         } catch (error) {
             console.log(error);
             const message: string = error as string;
-            onError(message);
+            if(onError) onError(message);
         }
     }
 
@@ -300,10 +300,23 @@ const SerialSender = ({ connectionId, onSerialSend, onError }: iSerialSender) =>
 }
 
 interface iSerialManager {
-    onError: (output: string) => void;
+    enableSend?: boolean;
+    enableMonitor?: boolean;
+    onConnect?: (connectionInfo: chrome.serial.ConnectionInfo) => void;
+    onDisconnect?: (result: boolean) => void;
+    onData?: (connectionId:number, output: string) => void;
+    onError?: (output: string) => void;
 }
 
-const SerialManager = ({onError}:iSerialManager) => {
+const SerialManager = (
+    {
+        enableSend=true
+    ,   enableMonitor=true
+    ,   onConnect
+    ,   onDisconnect
+    ,   onData
+    ,   onError
+    }:iSerialManager) => {
     const [openCanvas, setOpenCanvas] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [serialDeviceInfo, setSerialDeviceInfo] = useState<chrome.serial.DeviceInfo | undefined>();
@@ -329,16 +342,19 @@ const SerialManager = ({onError}:iSerialManager) => {
         console.log(connectionInfo);
         setSerialConnectionInfo(connectionInfo);
         setIsConnected(true);
+        if(onConnect) onConnect(connectionInfo);
     }
 
     const onSerialPortDisconnect = (result: boolean) => {
         console.log(result);
         setSerialConnectionInfo(undefined);
         setIsConnected(false);
+        if(onDisconnect) onDisconnect(result);
     }
 
     const onSerialInput = (input: string) => {
         console.log(input);
+        if(onData && connectionId) onData(connectionId,input);
     }
 
     const onSerialSend = (sendInfo: object) => {
@@ -370,21 +386,25 @@ const SerialManager = ({onError}:iSerialManager) => {
                     />
                 </Col>
                 <Col sm={"4"} >
-                    <SerialSender
-                        connectionId={connectionId}
-                        onSerialSend={onSerialSend}
-                        onError={onError}
-                    />
+                    {(enableSend)?
+                        <SerialSender
+                            connectionId={connectionId}
+                            onSerialSend={onSerialSend}
+                            onError={onError}
+                        />
+                    :false}
                 </Col>
                 <Col sm={"1"} className={"my-2"} >
-                    <Button
-                        color={(isConnected) ? "primary" : "secondary"}
-                        className={(!isConnected) ? "muted" : ""}
-                        disabled={!isConnected}
-                        onClick={toggleCanvas}
-                    >
-                        Monitor
-                    </Button>
+                    {(enableMonitor)?
+                        <Button
+                            color={(isConnected) ? "primary" : "secondary"}
+                            className={(!isConnected) ? "muted" : ""}
+                            disabled={!isConnected}
+                            onClick={toggleCanvas}
+                        >
+                            Monitor
+                        </Button>
+                    :false}
                 </Col>
             </Row>
             <Offcanvas
