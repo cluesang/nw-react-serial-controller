@@ -106,12 +106,12 @@ class SerialDeviceController
 
         const device_lost_buffer_msg = stringToArrayBuffer("device_lost");
         chrome.serial.onReceiveError.addListener(({connectionId, error})=>{
-            if(error === device_lost_buffer_msg)
+            if(error as unknown as string === "device_lost")
             {
                 setTimeout(()=>{
                     chrome.serial.setPaused(connectionId,false,()=>
                     {
-                       console.log("polled");
+                    //    console.log("polled");
                     });
                 },1000);
             } else {

@@ -11,6 +11,7 @@ import {
 } from 'reactstrap';
 import { SerialPortList, SerialPortConnection, SerialPortMonitor, SerialReader, SerialSender, SerialManager} from './components/SerialUIComponents';
 import { SerialDeviceController } from './controllers/SerialDeviceController';
+import POCReader from './components/POCReader';
 import './App.css';
 
 chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse)=>{
@@ -64,12 +65,7 @@ const App = () => {
                   </Alert>}
           </Col>
       </Row>
-      <SerialManager 
-        onConnect={onConnect}
-        onDisconnect={onDisconnect}
-        onData={onData}
-        onError={onError}
-        />
+      <POCReader />
       <SerialManager 
         onConnect={onConnect}
         onDisconnect={onDisconnect}

@@ -43,7 +43,6 @@ const SerialPortList = ({ onSelect, isConnected = false, onError }: iSerialPortL
         if (isConnected) {
             if(onError) onError("You must disconnect from the current port before you can select a new one.");
         }
-        console.log("dropdown click");
     }
 
     return (
@@ -226,8 +225,6 @@ const SerialReader = ({ connectionId, onSerialInput, onError }: iSerialReader) =
     useEffect(() => {
         setReadingBuffer("");
         SerialDeviceController.addListener((successStatus, incommingConnectionId, message) => {
-            // console.log(successStatus,connectionId,message);
-            console.log(connectionId, incommingConnectionId);
             if (!successStatus) if(onError) onError(message);
             if (connectionId === incommingConnectionId) {
                 onSerialInput(message);
@@ -334,12 +331,10 @@ const SerialManager = (
     },[serialConnectionInfo])
 
     const onSerialPortSelect = (deviceInfo: chrome.serial.DeviceInfo) => {
-        console.log(deviceInfo);
         setSerialDeviceInfo(deviceInfo);
     }
 
     const onSerialPortConnect = (connectionInfo: chrome.serial.ConnectionInfo) => {
-        console.log(connectionInfo);
         setSerialConnectionInfo(connectionInfo);
         setIsConnected(true);
         if(onConnect) onConnect(connectionInfo);
@@ -353,7 +348,6 @@ const SerialManager = (
     }
 
     const onSerialInput = (input: string) => {
-        console.log(input);
         if(onData && connectionId) onData(connectionId,input);
     }
 
