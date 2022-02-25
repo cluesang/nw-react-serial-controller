@@ -7,15 +7,16 @@ import {
     , ModalHeader
     , ModalFooter
 } from 'reactstrap';
+import { userPrompt } from '../controllers/IPOCReaderController';
 
 interface iCalibrationModal {
-    prompt: string;
-    onNext: () => void;
-    onCancel: () => void;
+    prompt?: userPrompt;
     open: boolean;
+    onAccept: ()=>void;
+    onCancel: ()=>void;
 }
 
-const CalibrationModal = ({ prompt, onNext, onCancel, open = false }: iCalibrationModal) => {
+const CalibrationModal = ({ prompt, open = false, onAccept, onCancel }: iCalibrationModal) => {
     const [modal, setModal] = useState(false);
     const toggle = () => setModal(!modal);
 
@@ -23,21 +24,29 @@ const CalibrationModal = ({ prompt, onNext, onCancel, open = false }: iCalibrati
 
     const handleNext = () => {
         toggle();
-        onNext();
+        if (prompt) prompt.acceptAction();
+        onAccept();
     }
 
     const handleCancel = () => {
         toggle();
+        if (prompt) prompt.cancelAction();
         onCancel();
     }
 
     return (
         <div>
-            <Button color= "primary" onClick = { toggle } > Calibrate </Button>
+            {/* <Button 
+                color= "primary" 
+                onClick = { toggle } 
+                disable={!prompt}
+            > 
+            Calibrate 
+            </Button> */}
             < Modal isOpen = { modal } toggle = { toggle } >
                 <ModalHeader toggle={ toggle }> Calibartion </ModalHeader>
                 < ModalBody >
-                    { prompt }
+                    { (prompt)?prompt.dialog:false }
                 </ModalBody>
                 < ModalFooter >
                     <Button color="primary" onClick = { handleNext } > Next </Button>{' '}

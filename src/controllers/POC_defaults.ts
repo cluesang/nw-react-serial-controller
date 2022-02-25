@@ -1,4 +1,5 @@
 import * as types from "./IPOCReaderController";
+import * as enums from "./POC_enums";
 
 export const diagnosticBuffer = {
     "A1": {
@@ -83,30 +84,67 @@ export const routine:types.iDiagnosticRoutineStep[] =
 ,   {loc: "B4", pwm: 75}
 ]
 
+export const calibrationSlide5Prompt:types.userPrompt = {
+    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_5
+,   acceptAction:()=>{}
+,   cancelAction:()=>{}
+}
+
+export const calibrationSlide4Prompt:types.userPrompt = {
+    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_4
+,   acceptAction:()=>{}
+,   cancelAction:()=>{}
+}
+
+export const calibrationSlide3Prompt:types.userPrompt = {
+    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_3
+,   acceptAction:()=>{}
+,   cancelAction:()=>{}
+}
+
+export const calibrationSlide2Prompt:types.userPrompt = {
+    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_2
+,   acceptAction:()=>{}
+,   cancelAction:()=>{}
+}
+
+export const calibrationSlide1Prompt:types.userPrompt = {
+    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_1
+,   acceptAction:()=>{}
+,   cancelAction:()=>{}
+}
+
+export const calibrationSlide0Prompt:types.userPrompt = {
+    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_0
+,   acceptAction:()=>{}
+,   cancelAction:()=>{}
+}
+
+
 export const calibrationRoutine:types.iCalibrationRoutineStep[] = 
 [
     {
-        prompt: "Place calibration slide 5 into the reader."
+        prompt: calibrationSlide5Prompt
     ,   steps: routine
     }
 ,   {
-        prompt: "Place calibration slide 4 into the reader."
+        prompt: calibrationSlide4Prompt
     ,   steps: routine
     }
 ,   {
-        prompt: "Place calibration slide 3 into the reader."
+        prompt: calibrationSlide3Prompt
     ,   steps: routine
     }
 ,   {
-        prompt: "Place calibration slide 2 into the reader."
+        prompt: calibrationSlide2Prompt
     ,   steps: routine
     }
 ,   {
-        prompt: "Place calibration slide 1 into the reader."
+        prompt: calibrationSlide1Prompt
     ,   steps: routine
     }
 ,   {
-        prompt: "Place calibration slide 0 into the reader."
+        prompt: calibrationSlide0Prompt
     ,   steps: routine
     }
 ]

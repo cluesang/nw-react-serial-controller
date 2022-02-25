@@ -17,6 +17,7 @@ import POCSerialPortConnection from './POCSerialPortConnection';
 import {POCReaderController} from '../controllers/POCReaderController';
 import {APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from "../controllers/POC_enums";
 import { LineChart } from './charts/Charts';
+import { userPrompt } from '../controllers/IPOCReaderController';
 
 interface iDiagnosticSiteData {
   [key: string]: {
@@ -56,7 +57,7 @@ const POCReader = ({ onError }:iPOCReader) => {
   const [connectionId, setConnectionId] = useState<number>();
   const [diagnosticSiteData, setDiagnosticSiteData] = useState<iDiagnosticSiteData>({"SITE":{times:[],voltages:[]}});
   const [openModal, setOpenModal] = useState<boolean>(false);
-  const [prompt, setPrompt] = useState<string>("");
+  const [userPrompt, setUserPrompt] = useState<userPrompt>();
 
   useEffect(() => {
     POCReaderController.addListener((successStatus, incommingConnectionId, message) => {
@@ -106,13 +107,20 @@ const POCReader = ({ onError }:iPOCReader) => {
     POCReaderController.runCalibration();
   }
 
-  const promptUser = (prompt:string) =>
+  const promptUser = (userPrompt:userPrompt) =>
   {
     console.log("user prompt: "+prompt);
-    setPrompt(prompt);
+    setUserPrompt(userPrompt);
     setOpenModal(true);
   }
   POCReaderController.onUserPrompt(promptUser);
+
+  const continueCalibration = () =>
+  {
+    console.log("continuing calibration");
+    setOpenModal(false);
+    // POCReaderController.runDefaultRoutine()
+  }
 
   const stopCalibration = () =>
   {
@@ -124,7 +132,7 @@ const POCReader = ({ onError }:iPOCReader) => {
   return (
     <Container>
       <Row>
-        <Col xs={6} className={"text-start"} >
+        <Col xs={8} className={"text-start"} >
           <POCSerialPortConnection
              onConnect={onConnect}
              onDisconnect={onDisconnect}
@@ -134,7 +142,7 @@ const POCReader = ({ onError }:iPOCReader) => {
             {readerState}
           </span>
         </Col>
-        <Col xs={6} className={"btn btn-group"}>
+        <Col xs={4} className={"btn btn-group"}>
           {/* <SerialManager 
             enableSend={false}
             enableMonitor={false}
@@ -154,11 +162,14 @@ const POCReader = ({ onError }:iPOCReader) => {
           {(connectionId)?
             <div className='d-flex m-2 p-2 justify-content-between'>
               <CalibrationModal 
-                prompt={prompt} 
-                onNext={runCalibration} 
-                onCancel={stopCalibration} 
+                prompt={userPrompt}
                 open={openModal}
+                onAccept={continueCalibration}
+                onCancel={stopCalibration}
                 />
+              <Button onClick={runCalibration}>
+                  Calibrate
+              </Button> 
               <Button onClick={runRoutine}>
                 Default Routine
               </Button>            

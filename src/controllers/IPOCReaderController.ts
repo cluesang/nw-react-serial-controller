@@ -1,4 +1,4 @@
-import { SerialDeviceController } from "./SerialDeviceController";
+import * as enums from "./POC_enums";
 
 export interface iSerialMessage
 {
@@ -31,6 +31,12 @@ export interface iDiagnosticRoutineStep {
     pwm: number;
 }
 export interface iCalibrationRoutineStep {
-    prompt: string;
+    prompt: userPrompt;
     steps: iDiagnosticRoutineStep[];
+}
+
+export interface userPrompt {
+    dialog: enums.USER_DIALOG;
+    acceptAction: ()=>void;
+    cancelAction: ()=>void;
 }

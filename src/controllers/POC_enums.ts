@@ -11,6 +11,7 @@ export enum READER_STATE {
 ,   RESET = "RESET" 
 ,   PARSE_ERROR = "PARSE ERROR"
 ,   SEMANTIC_ERROR = "SEMANTIC ERROR"
+,   UNDEFINED = "UNDEFINED INPUT"
 }
 
 export enum APP_STATE {
@@ -23,7 +24,7 @@ export enum APP_STATE {
 }
 
 export enum READER_ACTION {
-   INITIALIZE = "initialize" 
+    INITIALIZE = "initialize" 
 ,   GET_METADATA = "getMetaData"
 ,   RUN_DIAGNOSTIC = "runDiagnostic" 
 ,   BLINK = "blink" 
@@ -39,4 +40,13 @@ export enum READER_SITES {
 ,   B2 = "B2"
 ,   B3 = "B3"
 ,   B4 = "B4"
+}
+
+export enum USER_DIALOG {
+    CALIBRATION_SLIDE_5 = "CALIBRATION_SLIDE_5"
+,   CALIBRATION_SLIDE_4 = "CALIBRATION_SLIDE_4"
+,   CALIBRATION_SLIDE_3 = "CALIBRATION_SLIDE_3"
+,   CALIBRATION_SLIDE_2 = "CALIBRATION_SLIDE_2"
+,   CALIBRATION_SLIDE_1 = "CALIBRATION_SLIDE_1"
+,   CALIBRATION_SLIDE_0 = "CALIBRATION_SLIDE_0"
 }
