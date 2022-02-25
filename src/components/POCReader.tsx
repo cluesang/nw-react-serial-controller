@@ -6,9 +6,13 @@ import {
 , ListGroupItem
 , Button
 , Container
+, Modal
+, ModalBody
+, ModalHeader
+, ModalFooter
 } from 'reactstrap';
 import { SerialManager, SerialPortConnection, SerialPortList } from './SerialUIComponents';
-import {POCReaderController, READER_STATE, READER_ACTION, READER_SITES} from '../controllers/POCReaderController';
+import {POCReaderController, APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from '../controllers/POCReaderController';
 import { LineChart } from './charts/Charts';
 
 interface iDiagnosticSiteData {
@@ -19,16 +23,15 @@ interface iDiagnosticSiteData {
 }
 
 interface iReaderAction {
-  connectionId: number;
   action: READER_ACTION;
 }
-const ReaderAction = ({connectionId, action}:iReaderAction) =>
+const ReaderAction = ({action}:iReaderAction) =>
 {
   const sendAction = () =>
   {
     const command = POCReaderController.genCommand(action);
     console.log(command);
-    POCReaderController.send(connectionId,command);
+    POCReaderController.req(command);
   }
 
   return (
@@ -190,15 +193,60 @@ const POCSerialPortConnection = ({onConnect, onDisconnect, onError}:iPOCSerialPo
   )
 }
 
+
+interface iCalibrationModal {
+  prompt: string;
+  onNext: ()=>void;
+  onCancel: ()=>void;
+  open:boolean;
+}
+
+const CalibrationModal = ({prompt, onNext, onCancel, open=false}:iCalibrationModal) => {
+  const [modal, setModal] = useState(false);
+  const toggle = () => setModal(!modal);
+
+  useEffect(()=>setModal(open),[open]);
+
+  const handleNext = () =>
+  {
+    toggle();
+    onNext();
+  }
+
+  const handleCancel = () =>
+  {
+    toggle();
+    onCancel();
+  }
+
+  return (
+    <div>
+      <Button color="primary" onClick={toggle}>Calibrate</Button>
+      <Modal isOpen={modal} toggle={toggle}>
+        <ModalHeader toggle={toggle}>Calibartion</ModalHeader>
+        <ModalBody>
+          {prompt}
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={handleNext}>Next</Button>{' '}
+          <Button color="secondary" onClick={handleCancel}>Cancel</Button>
+        </ModalFooter>
+      </Modal>
+    </div>
+  );
+}
+
 interface iPOCReader
 {
   onError:(msg:string)=>void;
 }
 const POCReader = ({ onError }:iPOCReader) => {
 
-  const [readerState, setReaderState] = useState(POCReaderController.state);
+  const [readerState, setReaderState] = useState(POCReaderController.state as string);
   const [connectionId, setConnectionId] = useState<number>();
-  const [diagnosticSiteData, setDiagnosticSiteData] = useState<iDiagnosticSiteData[]>([]);
+  const [diagnosticSiteData, setDiagnosticSiteData] = useState<iDiagnosticSiteData>({"SITE":{times:[],voltages:[]}});
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [prompt, setPrompt] = useState<string>("");
 
   useEffect(() => {
     POCReaderController.addListener((successStatus, incommingConnectionId, message) => {
@@ -224,21 +272,43 @@ const POCReader = ({ onError }:iPOCReader) => {
     POCReaderController.setConnectionId(undefined);
   }
 
-  const onReaderStateChange = (state:READER_STATE) =>
+  const onReaderStateChange = (state:READER_STATE|APP_STATE, message:string) =>
   {
-    setReaderState(state);
+    setReaderState(message);
+    console.log(diagnosticSiteData);
   }
   POCReaderController.onStateChange(onReaderStateChange);
 
   const onDiagnosticData = (siteData:iDiagnosticSiteData) =>
   {
-    setDiagnosticSiteData(diagnosticSiteData => [...diagnosticSiteData,siteData]);
+    setDiagnosticSiteData(siteData);
   }
   POCReaderController.onDiagnosticData(onDiagnosticData);
 
   const runRoutine = () =>
   {
     POCReaderController.runDefaultRoutine()
+  }
+
+  const runCalibration = () =>
+  {
+    console.log("run calibration");
+    POCReaderController.runCalibration();
+  }
+
+  const promptUser = (prompt:string) =>
+  {
+    console.log("user prompt: "+prompt);
+    setPrompt(prompt);
+    setOpenModal(true);
+  }
+  POCReaderController.onUserPrompt(promptUser);
+
+  const stopCalibration = () =>
+  {
+    console.log("Stop calibration");
+    setOpenModal(false);
+    // POCReaderController.runDefaultRoutine()
   }
   
   return (
@@ -254,7 +324,7 @@ const POCReader = ({ onError }:iPOCReader) => {
             {readerState}
           </span>
         </Col>
-        <Col xs={6}>
+        <Col xs={6} className={"btn btn-group"}>
           {/* <SerialManager 
             enableSend={false}
             enableMonitor={false}
@@ -263,19 +333,25 @@ const POCReader = ({ onError }:iPOCReader) => {
             onData={onData}
             onError={onError}
             /> */}
+            <ReaderAction action={READER_ACTION.INITIALIZE} />
+            <ReaderAction action={READER_ACTION.BLINK} />
+            <ReaderAction action={READER_ACTION.GET_METADATA} />
+            <ReaderAction action={READER_ACTION.RESET} />
         </Col>
       </Row>
       <Row>
         <Col xs={4}>
           {(connectionId)?
             <div className='d-flex m-2 p-2 justify-content-between'>
+              <CalibrationModal 
+                prompt={prompt} 
+                onNext={runCalibration} 
+                onCancel={stopCalibration} 
+                open={openModal}
+                />
               <Button onClick={runRoutine}>
                 Default Routine
-              </Button>
-              {/* <ReaderAction connectionId={connectionId} action={READER_ACTION.INITIALIZE} /> */}
-              <ReaderAction connectionId={connectionId} action={READER_ACTION.BLINK} />
-              {/* <ReaderAction connectionId={connectionId} action={READER_ACTION.GET_METADATA} /> */}
-              <ReaderAction connectionId={connectionId} action={READER_ACTION.RESET} />
+              </Button>            
             </div>
           : false}
           {(connectionId)?
@@ -283,7 +359,7 @@ const POCReader = ({ onError }:iPOCReader) => {
           :false}
         </Col>
         <Col xs={8}>
-            <LineChart siteData={diagnosticSiteData} />
+          {/* <LineChart siteData={diagnosticSiteData} /> */}
         </Col>
       </Row>
       <Row>

@@ -22,7 +22,15 @@ enum READER_STATE {
 ,   FINISHED_DIAGNOSTIC = "FINISHED DIAGNOSTIC" 
 ,   BLINK = "BLINK" 
 ,   RESET = "RESET" 
-,   ERROR = "ERROR"
+,   PARSE_ERROR = "PARSE ERROR"
+,   SEMANTIC_ERROR = "SEMANTIC ERROR"
+}
+
+enum APP_STATE {
+    START = "START"
+,   LOADING = "LOADING"
+,   CALIBRATING = "CALIBRATING"
+,   RUNNING_DIAGNOSTIC = "RUNNING_DIAGNOSING"
 }
 
 enum READER_ACTION {
@@ -73,6 +81,40 @@ const defaultRoutine:diagnosticRoutineStep[] =
 ,   {loc: "B2", pwm: 75}
 ,   {loc: "B3", pwm: 75}
 ,   {loc: "B4", pwm: 75}
+]
+
+interface iCalibrationRoutineStep {
+    prompt: string;
+    steps: diagnosticRoutineStep[];
+}
+
+const calibrationRoutine:iCalibrationRoutineStep[] = 
+[
+    {
+        prompt: "Place calibration slide 5 into the reader."
+    ,   steps: defaultRoutine
+    }
+,   {
+        prompt: "Place calibration slide 4 into the reader."
+    ,   steps: defaultRoutine
+    }
+,   {
+        prompt: "Place calibration slide 3 into the reader."
+    ,   steps: defaultRoutine
+    }
+,   {
+        prompt: "Place calibration slide 2 into the reader."
+    ,   steps: defaultRoutine
+    }
+,   {
+        prompt: "Place calibration slide 1 into the reader."
+    ,   steps: defaultRoutine
+    }
+,   {
+        prompt: "Place calibration slide 0 into the reader."
+    ,   steps: defaultRoutine
+    }
+    
 ]
 
 function prepDiagnosticRequest(loc:string, pwmValue:number)
@@ -180,7 +222,7 @@ const initSiteSettings = {
 
 class POCReaderController extends SerialDeviceController {
     
-    static state = READER_STATE.DISCONNECTED;
+    static state:READER_STATE|APP_STATE = READER_STATE.DISCONNECTED;
     static connectionId:number|undefined;
     static serialBuffer = "";
     static incompleteFlag = false;
@@ -193,8 +235,12 @@ class POCReaderController extends SerialDeviceController {
     static activeRoutine:diagnosticRoutineStep[]|undefined;
     static activeRoutineIndex = 0;
 
-    static stateChangeCallback:(state:READER_STATE)=>void;
+    static activeCalibrationRoutine:iCalibrationRoutineStep[]|undefined;
+    static activeCalibrationRoutineIndex = 0;
+
+    static stateChangeCallback:(state:READER_STATE|APP_STATE, message:string)=>void;
     static diagnosticDataCallback:(siteData:iDiagnosticSiteData)=>void;
+    static userPromptCallback:(prompt:string)=>void
 
     static parseMessages(message:iSerialMessage)
     {
@@ -261,19 +307,24 @@ class POCReaderController extends SerialDeviceController {
             case "reset":
                 {
                     // console.log(message)
-                    this.setState(READER_STATE.RESET);                        
+                    this.setState(READER_STATE.RESET);     
+                    this.activeSite = "";                     
                 }
                 break;
             case "parseError":
                 {
                     // console.log(message)
-                    this.setState(READER_STATE.ERROR);                    
+                    this.setState(READER_STATE.PARSE_ERROR);   
+                    this.activeSite = "";      
+                    this.stopRoutine();                   
                 }
                 break;
             case "semanticError":
                 {
                     // console.log(message)
-                    this.setState(READER_STATE.ERROR);                    
+                    this.setState(READER_STATE.SEMANTIC_ERROR);    
+                    this.activeSite = "";      
+                    this.stopRoutine();                  
                 }
                 break;
             case "manualReset":
@@ -281,7 +332,7 @@ class POCReaderController extends SerialDeviceController {
                     // console.log(message)
                     this.setState(READER_STATE.RESET);     
                     this.activeSite = "";      
-                    this.stopRoutine();            
+                    // this.stopRoutine();            
                 }
                 break;
             // case "reading":
@@ -338,13 +389,19 @@ class POCReaderController extends SerialDeviceController {
         messages.map(msg => this.parseMessages(msg));
     }
 
-    static setState(readerState:READER_STATE)
+    static setState(state:READER_STATE|APP_STATE)
     {
-        this.state = readerState;
-        this.stateChangeCallback(readerState);
+        this.state = state;
+        let userStateMessage:string = state;
+        if(this.activeRoutine)
+        {
+            const routineMessage = "ROUTINE STEP: "+this.activeRoutineIndex+" of "+this.activeRoutine.length;
+            userStateMessage = routineMessage+" / "+userStateMessage;
+        } 
+        this.stateChangeCallback(state,userStateMessage);
     }
 
-    static onStateChange(callback:(state:READER_STATE)=>void)
+    static onStateChange(callback:(state:READER_STATE|APP_STATE, message:string)=>void)
     {
         this.stateChangeCallback = callback;
     }
@@ -352,6 +409,18 @@ class POCReaderController extends SerialDeviceController {
     static onDiagnosticData(callback:(diagnosticData:iDiagnosticSiteData)=>void)
     {
         this.diagnosticDataCallback = callback;
+    }
+
+    static onUserPrompt(callback:(prompt:string)=>void)
+    {
+        console.log("attaching user prompt callback");
+        this.userPromptCallback = callback;
+    }
+
+    static sendUserPrompt(prompt:string)
+    {
+        console.log(prompt);
+        this.userPromptCallback(prompt);
     }
 
     static genCommand(action:READER_ACTION, params?:object)
@@ -428,13 +497,18 @@ class POCReaderController extends SerialDeviceController {
         ,   ...newSiteData
         }
         // console.log(this.diagnosticBuffer);
-        this.diagnosticDataCallback(newSiteData);
+        this.diagnosticDataCallback(this.diagnosticBuffer);
     }
 
     static resetBox(connectionId:number)
     {
         const command = POCReaderController.genCommand(READER_ACTION.RESET);
         POCReaderController.send(connectionId,command);
+    }
+
+    static req(command:string)
+    {
+        if(this.connectionId) super.send(this.connectionId,command)
     }
 
     static startRoutine(routine:diagnosticRoutineStep[])
@@ -463,6 +537,12 @@ class POCReaderController extends SerialDeviceController {
         this.activeRoutineIndex = 0;
     }
 
+    static pauseRoutine()
+    {
+        this.activeRoutine = undefined;
+        this.activeRoutineIndex = 0;
+    }
+
     static setConnectionId(connectionId:number|undefined)
     {
         this.connectionId = connectionId;
@@ -472,10 +552,41 @@ class POCReaderController extends SerialDeviceController {
     {
         this.startRoutine(defaultRoutine);
     }
+
+    static startCalibration(calibrationRoutine:iCalibrationRoutineStep[])
+    {
+        this.activeCalibrationRoutine = calibrationRoutine;
+        this.activeCalibrationRoutineIndex = 0;
+        this.continueCalibration();
+    }
+
+    static continueCalibration()
+    {
+        // send out prompt
+        // waint for user okay
+        // send routine to start routine.
+        if(this.activeCalibrationRoutine)
+        {
+            const {prompt, steps} = this.activeCalibrationRoutine[this.activeCalibrationRoutineIndex];
+            this.sendUserPrompt(prompt);
+        }
+    }
+
+    static stopCalibration()
+    {
+        this.activeCalibrationRoutine = undefined;
+        this.activeCalibrationRoutineIndex = 0;
+    }
+
+    static runCalibration()
+    {
+        this.startCalibration(calibrationRoutine);
+    }
 }
 
 export { 
     POCReaderController, 
+    APP_STATE,
     READER_STATE, 
     READER_ACTION,
     READER_SITES
