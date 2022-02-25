@@ -128,25 +128,28 @@ class POCReaderController extends SerialDeviceController {
                     // console.log(message)
                     this.setState(enums.READER_STATE.RESET);     
                     this.activeSite = "";  
-                    this.stopRoutine();                     
+                    this.stopRoutine();    
+                    this.stopCalibration();                 
                 }
                 break;
             case "parseError":
                 {
-                    // console.log(message)
-                    this.setState(enums.READER_STATE.PARSE_ERROR); 
-                    if(this.activeRoutine) this.pauseRoutine();
-                    this.retryLastReq();  
-                    // this.activeSite = "";      
-                    // this.stopRoutine();                   
+                    if(this.state !== enums.READER_STATE.RUNNING_DIAGNOSTIC)
+                    {
+                        this.retryLastReq();     
+                    } else {
+                        this.setState(enums.READER_STATE.PARSE_ERROR);
+                    }
                 }
                 break;
             case "semanticError":
                 {
-                    // console.log(message)
-                    this.setState(enums.READER_STATE.SEMANTIC_ERROR);    
-                    this.activeSite = "";      
-                    this.stopRoutine();                  
+                    if(this.state !== enums.READER_STATE.RUNNING_DIAGNOSTIC)
+                    {
+                        this.retryLastReq();   
+                    } else {
+                        this.setState(enums.READER_STATE.SEMANTIC_ERROR); 
+                    }   
                 }
                 break;
             case "manualReset":
@@ -157,19 +160,16 @@ class POCReaderController extends SerialDeviceController {
                     this.stopRoutine();            
                 }
                 break;
-            // case "reading":
-            //     {
-            //         // console.log(message)
-            //         this.setState(READER_STATE.BOOTED);                    
-            //     }
-            //     // payload
-            //     break;
             case "undefined":
                 // payload
-                this.setState(enums.READER_STATE.UNDEFINED);    
-                if(this.activeRoutine) this.pauseRoutine();
-                this.retryLastReq();
-                
+                {
+                    if(this.state !== enums.READER_STATE.RUNNING_DIAGNOSTIC)
+                    {
+                        this.retryLastReq();
+                    } else {
+                        this.setState(enums.READER_STATE.UNDEFINED);  
+                    }
+                }                
                 break;
             default:
                 break;
@@ -181,6 +181,7 @@ class POCReaderController extends SerialDeviceController {
         setTimeout(()=>{
             this.setState(enums.APP_STATE.RETRYING_REQUEST);
             this.req(this.lastReq);
+            console.log("Retrying last request.");
             this.alreadyRetrying = false;
         },2000);
     }
@@ -378,11 +379,6 @@ class POCReaderController extends SerialDeviceController {
         this.activeRoutineIndex = 0;
     }
 
-    static pauseRoutine()
-    {
-        // this.activeRoutineIndex -= 1;
-    }
-
     static setConnectionId(connectionId:number|undefined)
     {
         this.connectionId = connectionId;
@@ -425,11 +421,6 @@ class POCReaderController extends SerialDeviceController {
             this.sendUserPrompt(prompt);
         }
     }
-
-    // static pauseCalibration()
-    // {
-    //     this.activeCalibrationRoutineIndex -= 1;
-    // }
 
     static stopCalibration()
     {
