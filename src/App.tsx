@@ -65,13 +65,7 @@ const App = () => {
                   </Alert>}
           </Col>
       </Row>
-      <POCReader />
-      <SerialManager 
-        onConnect={onConnect}
-        onDisconnect={onDisconnect}
-        onData={onData}
-        onError={onError}
-        />
+      <POCReader onError={onError} />
     </div>
   );
 }

@@ -1,0 +1,221 @@
+// reactstrap components
+import React, { useEffect, useState } from "react";
+// javascipt plugin for creating charts
+// import Chart from "chart.js";
+// react plugin used to create charts
+import { Line, Bar } from "react-chartjs-2";
+
+var colors = {
+    gray: {
+      100: "#f6f9fc",
+      200: "#e9ecef",
+      300: "#dee2e6",
+      400: "#ced4da",
+      500: "#adb5bd",
+      600: "#8898aa",
+      700: "#525f7f",
+      800: "#32325d",
+      900: "#212529",
+    },
+    theme: {
+      default: "#172b4d",
+      primary: "#5e72e4",
+      secondary: "#f4f5f7",
+      info: "#11cdef",
+      success: "#2dce89",
+      danger: "#f5365c",
+      warning: "#fb6340",
+    },
+    black: "#12263F",
+    white: "#FFFFFF",
+    transparent: "transparent",
+  };
+
+// Example 1 of Chart inside src/views/Index.js (Sales value - Card)
+let chartExample1 = {
+    options: {
+      scales: {
+        yAxes: [
+          {
+            gridLines: {
+              color: colors.gray[900],
+              zeroLineColor: colors.gray[900],
+            },
+            ticks: {
+              callback: function (value:number) {
+                if (!(value % 1)) {
+                  return value + "V";
+                }
+              },
+            },
+          },
+        ],
+        xAxes:[
+          {
+            ticks: {
+              callback: function (value:number) {
+                const rounded = Math.floor(value);
+                if (!(rounded % 5)) {
+                  return rounded + "s";
+                }
+              },
+            }
+          }
+        ],
+        x: {
+            grid: {
+                display: true,
+                drawBorder: true,
+                drawOnChartArea: true,
+                drawTicks: true,
+            }
+        },
+        y: {
+            grid: {
+                display: true,
+                drawBorder: true,
+                drawOnChartArea: true,
+                drawTicks: true,
+            }
+        }
+      },
+      tooltips: {
+        callbacks: {
+          label: function (item:any, data:any) {
+            var label = data.datasets[item.datasetIndex].label || "";
+            var yLabel = item.yLabel;
+            var content = "";
+
+            if (data.datasets.length > 1) {
+              content += label;
+            }
+
+            content += yLabel + "V";
+            return content;
+          },
+        },
+      },
+    }
+};
+
+// const times = [0, 5, 10, 15, 20, 25, 30, 35, 40];
+// const voltages = [0, 2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20];
+
+// const LineChart = ({times, voltages}:{times:number[],voltages:number[]}) =>{
+//   return (
+//     <div className="chart">
+//         <Line
+//         data={(canvas) => {
+//             return {
+//             labels: times,
+//             datasets: [
+//                 {
+//                 label: "Voltages",
+//                 data: voltages,
+//                 },
+//             ],
+//             };
+//         }}
+//         options={chartExample1.options}
+//         />
+//     </div>
+//   );
+// }
+
+const LineChart = ({times, voltages}:{times:number[],voltages:number[]}) =>{
+  return (
+    <div className="chart">
+        <Line
+        data={() => {
+            return {
+            labels: times,
+            datasets: [
+                {
+                label: "Voltages",
+                data: voltages,
+                },
+            ],
+            };
+        }}
+        options={chartExample1.options}
+        />
+    </div>
+  );
+}
+
+
+// Example 2 of Chart inside src/views/Index.js (Total orders - Card)
+let ResultsChart = {
+    options: {
+        plugins: {
+            legend: {
+                position: "top"
+            },
+            title: {
+                display: true,
+                text: "Results"
+            }
+    },
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              callback: function (value:number) {
+                if (!(value % 10)) {
+                  //return '$' + value + 'k'
+                  return value;
+                }
+              },
+            },
+          },
+        ],
+      },
+      tooltips: {
+        callbacks: {
+          label: function (item:any, data:any) {
+            var label = data.datasets[item.datasetIndex].label || "";
+            var yLabel = item.yLabel;
+            var content = "";
+            if (data.datasets.length > 1) {
+              content += label;
+            }
+            content += yLabel;
+            return content;
+          },
+        },
+      },
+    }
+  };
+
+
+const BarChart = ({labels, slopes=[0,0,0,0,0,0,0,0]}:{labels:string[],slopes:number[]}) => {
+    const [data, setData] = useState("");
+  
+    return (
+        <div className="chart">
+            <Bar
+            data={(canvas:any) => {
+                return {
+                    labels: labels,
+                    datasets: [
+                      {
+                        label: "Slopes (dV/dt)",
+                        data: slopes,
+                        maxBarThickness: 10,
+                      },
+                      {
+                        label: "Calibration Target Slopes (dV/dt)",
+                        data: [1, 1, 1, 1, 1, 1, 1, 1],
+                        maxBarThickness: 10,
+                        backgroundColor: "#cecece"
+                      },
+                    ],
+                  }
+            }}
+            options={ResultsChart.options}
+            />
+        </div>
+    );
+  }
+
+export { LineChart, BarChart };
