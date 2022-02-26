@@ -54,14 +54,19 @@ const DiagnosticButtons = ({connectionId}:iDiagnosticButtons) =>
     const disable = (POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC
                     && POCReaderController.activeSite !== site)
                     || !POCReaderController.siteSettings[site].enable;
+    const pwm = POCReaderController.siteSettings[site].pwm;
+    const isActive = POCReaderController.activeSite === site;
+
     Buttons.push( 
-    <DiagnosticButton 
-      connectionId={connectionId} 
-      loc={site} 
-      pwm={POCReaderController.siteSettings[site].pwm} 
-      disabled={disable}
-      reset={POCReaderController.activeSite === site}
-    /> )
+      <>
+        <DiagnosticButton 
+          connectionId={connectionId} 
+          loc={site} 
+          pwm={pwm} 
+          disabled={disable}
+          reset={isActive}
+        /> {pwm}
+      </>)
   }
  
   return (

@@ -60,6 +60,8 @@ class POCReaderController extends SerialDeviceController {
     static userPromptCallback:(prompt:types.userPrompt)=>void
     static lastReq: string;
     static alreadyRetrying: boolean;
+    static enableDiagnosticDataCallback:boolean = true;
+    static diagnosticDataCallbackPeriod:number = 250;
 
     static parseMessages(message:types.iSerialMessage)
     {
@@ -173,7 +175,8 @@ class POCReaderController extends SerialDeviceController {
                 break;
         }
     }
-    static fitData() {
+    static fitData() 
+    {
         const data = this.diagnosticBuffer[this.activeSite];
         const pairs = data.times.map((time, index) => {
             const dataPoint:regression.DataPoint = [time, data.voltages[index]];
@@ -184,8 +187,11 @@ class POCReaderController extends SerialDeviceController {
         this.siteResults[this.activeSite].slope = slope;
         this.siteResults[this.activeSite].intercept = intercept;
         this.siteResults[this.activeSite].r2 = results.r2;
+        this.siteResults[this.activeSite].testDuration = data.times[data.times.length-1];
     }
-    static retryLastReq() {
+
+    static retryLastReq() 
+    {
         if(this.alreadyRetrying) return
         this.alreadyRetrying = true;
         setTimeout(()=>{
@@ -264,7 +270,6 @@ class POCReaderController extends SerialDeviceController {
 
     static onUserPrompt(callback:(prompt:types.userPrompt)=>void)
     {
-        // console.log("attaching user prompt callback");
         this.userPromptCallback = callback;
     }
 
@@ -346,8 +351,16 @@ class POCReaderController extends SerialDeviceController {
             ...this.diagnosticBuffer
         ,   ...newSiteData
         }
-        // console.log(this.diagnosticBuffer);
-        this.diagnosticDataCallback(this.diagnosticBuffer);
+        
+        // We're gonna rate limit the diagnosticDataCallbackupdate.
+        if(this.enableDiagnosticDataCallback) 
+        {
+            this.diagnosticDataCallback(this.diagnosticBuffer);
+            this.enableDiagnosticDataCallback = false;
+            setTimeout(()=>{
+                this.enableDiagnosticDataCallback = true;
+            },this.diagnosticDataCallbackPeriod);
+        }
     }
 
     static resetBox()
@@ -391,7 +404,11 @@ class POCReaderController extends SerialDeviceController {
             }
 
             console.log("Running step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
-            const {loc, pwm} = this.activeRoutine[this.activeRoutineIndex];
+            
+            const {loc} = this.activeRoutine[this.activeRoutineIndex];
+            const {pwm, enable} = this.siteSettings[loc];
+            console.log("Running site: "+loc+" at a pwm of: "+pwm);
+
             setTimeout(()=>{
                 if(this.connectionId) this.runDiagnostic(loc,pwm);
                 this.activeRoutineIndex += 1;
@@ -403,6 +420,7 @@ class POCReaderController extends SerialDeviceController {
     {
         this.activeRoutine = undefined;
         this.activeRoutineIndex = 0;
+        this.resetBox();
     }
 
     static setConnectionId(connectionId:number|undefined)
@@ -437,6 +455,10 @@ class POCReaderController extends SerialDeviceController {
                 return
             }
 
+            // We've finished the first calibration step just now.
+            // so we should adjustPWMValues.
+            if(this.activeCalibrationRoutineIndex === 1) this.adjustAllPWMValues();
+
             let {prompt, steps} = this.activeCalibrationRoutine[this.activeCalibrationRoutineIndex];
             prompt.acceptAction = ()=>{
                 this.startRoutine(steps);
@@ -461,6 +483,34 @@ class POCReaderController extends SerialDeviceController {
     static runCalibration()
     {
         this.startCalibration(defaults.calibrationRoutine);
+    }
+
+    static adjustSitePWMValue(site:string,targetTime:number):number|undefined
+    {
+        const currentTime = this.siteResults[site].testDuration;
+        if(currentTime)
+        {
+            const currentPWM = this.siteSettings[site].pwm;
+            const newPWM = Math.round(currentPWM*(currentTime/targetTime));
+            console.log("current runtime: "+currentTime+" target runtime: "+targetTime
+                        +" current pwm: "+currentPWM+" new pwm: "+newPWM);
+            return newPWM;
+        } else {
+            return undefined;
+        }
+    }
+
+    static adjustAllPWMValues()
+    {
+        this.setState(enums.APP_STATE.ADJUSTING_PWM_VALUES);
+        for(const site in enums.READER_SITES)
+        {
+            if(this.siteSettings[site].enable)
+            {
+                const newPWM = this.adjustSitePWMValue(site,30);
+                if(newPWM) this.siteSettings[site].pwm = newPWM;
+            }
+        }
     }
 }
 

@@ -23,9 +23,6 @@ export interface iDiagnosticSiteSettings {
     [key: string]: {
        pwm: number;
        enable: boolean;
-       slope: number|undefined;
-       intercept: number|undefined;
-       r2: number|undefined;
     }
 }
 
@@ -34,12 +31,12 @@ export interface iDiagnosticResults {
        slope: number|undefined;
        intercept: number|undefined;
        r2: number|undefined;
+       testDuration:number|undefined;
     }
 }
 
 export interface iDiagnosticRoutineStep {
     loc: string;
-    pwm: number;
 }
 export interface iCalibrationRoutineStep {
     prompt: userPrompt;

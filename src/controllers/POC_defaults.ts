@@ -38,60 +38,36 @@ export const diagnosticBuffer:types.iDiagnosticSiteData = {
 
 export const siteSettings = {
     "A1": {
-        pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        pwm: 6,
+        enable: true
     }
 ,   "A2": {
-        pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        pwm: 13,
+        enable: true
     }
 ,   "A3": {
-        pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        pwm: 27,
+        enable: true
     }
 ,   "A4": {
-        pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        pwm: 10,
+        enable: true
     }
 ,   "B1": {
-        pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        pwm: 15,
+        enable: true
     }
 ,   "B2": {
         pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        enable: true
     }
 ,   "B3": {
-        pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        pwm: 14,
+        enable: true
     }
 ,   "B4": {
-        pwm: 25,
-        enable: true,
-        slope: undefined,
-        intercept: undefined,
-        r2: undefined
+        pwm: 19,
+        enable: true
     }
 };
 
@@ -99,55 +75,63 @@ export const siteResults = {
     "A1": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 ,   "A2": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 ,   "A3": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 ,   "A4": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 ,   "B1": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 ,   "B2": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 ,   "B3": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 ,   "B4": {
         slope: undefined,
         intercept: undefined,
-        r2: undefined
+        r2: undefined,
+        testDuration: undefined
     }
 };
 
 export const routine:types.iDiagnosticRoutineStep[] = 
 [
-    {loc: "A1", pwm: 75}
-,   {loc: "A2", pwm: 75}
-,   {loc: "A3", pwm: 75}
-,   {loc: "A4", pwm: 75}
-,   {loc: "B1", pwm: 75}
-,   {loc: "B2", pwm: 75}
-,   {loc: "B3", pwm: 75}
-,   {loc: "B4", pwm: 75}
+    {loc: "A1"}
+,   {loc: "A2"}
+,   {loc: "A3"}
+,   {loc: "A4"}
+,   {loc: "B1"}
+,   {loc: "B2"}
+,   {loc: "B3"}
+,   {loc: "B4"}
 ]
 
 export const calibrationSlide5Prompt:types.userPrompt = {
