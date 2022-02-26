@@ -57,59 +57,95 @@ interface iDiagnosticSiteData {
 }
 
 interface iLineChart {
-  siteData: iDiagnosticSiteData[]
+  siteData: iDiagnosticSiteData
 }
 
 interface iGraphData {
-  labels: string[]
-  datasets: {
-    label: string,
-    data: number[],
-    borderColor: string,
-    backgroundColor: string
-  }[]
+  label: string,
+  data: number[],
+  borderColor: string,
+  backgroundColor: string
 }
 
-const LineChart = ({siteData}:iDiagnosticSiteData) =>
+const timeSequence30s = Array.from({length: (30/0.085)}, (_, i) => i*0.085)
+
+const LineChart = ({siteData}:iLineChart) =>
 {
-  const [graphData, setGraphData] = useState<iGraphData>();
+  // const [graphData, setGraphData] = useState<iGraphData>();
+  const [datasets, setDatasets] = useState<iGraphData[]>([]);
   const [times, setTimes] = useState<string[]>([]);
   const [voltages, setVoltages] = useState<number[]>([]);
 
   useEffect(()=>{
 
-    // let labels:string[] = [];
-    // let data:number[] = [];
-    // const datasets = siteData.map((site) => {
-    //   const loc = Object.keys(site)[0];
-    //   // console.log(site);
-    //   labels = site[loc].times.map(time => time.toFixed(2));
-    //   return {
-    //     label: loc,
-    //     data: site[loc].voltages,
-    //     borderColor: 'rgb(255, 99, 132)',
-    //     backgroundColor: 'rgba(255, 99, 132, 0.5)',
-    //   }
-    // });
-    // setTimes(labels);
-    // setVoltages()
-    // // setGraphData({
-    // //   labels,
-    // //   datasets: datasets
-    // // });
-  },[siteData])
+    const times:number[][] = [];
+    for (const site in siteData)
+    {
+      times.push(siteData[site].times);
+    }
+    
+    let longestTime:number[] = timeSequence30s;
+    times.map((time:number[])=>{
+      longestTime = (time.length > longestTime.length)? time : longestTime;
+    });
+
+    const time_lables = longestTime.map(time => time.toFixed(2));
+    if(siteData["A1"]) setTimes(time_lables);
+  },[siteData]);
 
   // return <Line options={options} data={(graphData)?graphData:data} />;
   return <Line 
             options={options} 
             data={{
-              labels,
+              labels:times,
               datasets: [
                 {
-                  label: 'Dataset 1',
-                  data: labels.map(() => faker.datatype.number({ min: 0, max: 5 })),
+                  label: 'A1',
+                  data: siteData["A1"].voltages,
+                  borderColor: 'rgb(13, 110, 253)',
+                  backgroundColor: 'rgbA(13, 110, 253, 0.5)',
+                }
+              ,{
+                  label: 'A2',
+                  data: siteData["A2"].voltages,
+                  borderColor: 'rgb(102, 16, 242)',
+                  backgroundColor: 'rgba(102, 16, 242, 0.5)',
+                }
+              ,{
+                  label: 'A3',
+                  data: siteData["A3"].voltages,
                   borderColor: 'rgb(255, 99, 132)',
                   backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                }
+              ,{
+                  label: 'A4',
+                  data: siteData["A4"].voltages,
+                  borderColor: 'rgb(214, 51, 132)',
+                  backgroundColor: 'rgba(214, 51, 132, 0.5)',
+                }
+              , {
+                  label: 'B1',
+                  data: siteData["B1"].voltages,
+                  borderColor: 'rgb(220, 53, 69)',
+                  backgroundColor: 'rgba(220, 53, 69, 0.5)',
+                }
+              ,{
+                  label: 'B2',
+                  data: siteData["B2"].voltages,
+                  borderColor: 'rgb(253, 126, 20)',
+                  backgroundColor: 'rgba(253, 126, 20, 0.5)',
+                }
+              ,{
+                  label: 'B3',
+                  data: siteData["B3"].voltages,
+                  borderColor: 'rgb(255, 193, 7)',
+                  backgroundColor: 'rgba(255, 193, 7, 0.5)',
+                }
+              ,{
+                  label: 'B4',
+                  data: siteData["B4"].voltages,
+                  borderColor: 'rgb(25, 135, 84)',
+                  backgroundColor: 'rgba(25, 135, 84, 0.5)',
                 }
               ],
             }} 

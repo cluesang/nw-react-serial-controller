@@ -1,7 +1,7 @@
 import * as types from "./IPOCReaderController";
 import * as enums from "./POC_enums";
 
-export const diagnosticBuffer = {
+export const diagnosticBuffer:types.iDiagnosticSiteData = {
     "A1": {
         times: []
     ,   voltages: []
@@ -39,38 +39,104 @@ export const diagnosticBuffer = {
 export const siteSettings = {
     "A1": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 ,   "A2": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 ,   "A3": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 ,   "A4": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 ,   "B1": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 ,   "B2": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 ,   "B3": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 ,   "B4": {
         pwm: 25,
-        enable: true
+        enable: true,
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
     }
 };
 
+export const siteResults = {
+    "A1": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+,   "A2": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+,   "A3": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+,   "A4": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+,   "B1": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+,   "B2": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+,   "B3": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+,   "B4": {
+        slope: undefined,
+        intercept: undefined,
+        r2: undefined
+    }
+};
 
 export const routine:types.iDiagnosticRoutineStep[] = 
 [

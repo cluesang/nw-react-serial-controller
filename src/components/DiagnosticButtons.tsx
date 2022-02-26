@@ -23,7 +23,7 @@ const DiagnosticButton = ({connectionId, loc, pwm, disabled=false, reset=false}:
   {
     if(reset)
     {
-      POCReaderController.resetBox(connectionId);
+      POCReaderController.resetBox();
     } else {
       POCReaderController.runDiagnostic(loc,pwm);
     }

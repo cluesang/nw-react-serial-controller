@@ -16,6 +16,7 @@ import DiagnosticButtons from './DiagnosticButtons';
 import POCSerialPortConnection from './POCSerialPortConnection';
 import {POCReaderController} from '../controllers/POCReaderController';
 import {APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from "../controllers/POC_enums";
+import * as defaults from "../controllers/POC_defaults";
 import { LineChart } from './charts/Charts';
 import { userPrompt } from '../controllers/IPOCReaderController';
 
@@ -41,6 +42,7 @@ const ReaderAction = ({action}:iReaderAction) =>
   return (
     <Button
       onClick={sendAction}
+      color={"info"}
     >
       {action}
     </Button>
@@ -55,9 +57,12 @@ const POCReader = ({ onError }:iPOCReader) => {
 
   const [readerState, setReaderState] = useState(POCReaderController.state as string);
   const [connectionId, setConnectionId] = useState<number>();
-  const [diagnosticSiteData, setDiagnosticSiteData] = useState<iDiagnosticSiteData>({"SITE":{times:[],voltages:[]}});
+  const [diagnosticSiteData, setDiagnosticSiteData] = useState<iDiagnosticSiteData>(defaults.diagnosticBuffer);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [userPrompt, setUserPrompt] = useState<userPrompt>();
+  const [isCalibrating, setIsCalibrating] = useState<boolean>(false);
+  const [isDiagnosing, setIsDiagnosing] = useState<boolean>(false);
+  
 
   useEffect(() => {
     POCReaderController.addListener((successStatus, incommingConnectionId, message) => {
@@ -85,6 +90,8 @@ const POCReader = ({ onError }:iPOCReader) => {
 
   const onReaderStateChange = (state:READER_STATE|APP_STATE, message:string) =>
   {
+    if(state === APP_STATE.FINISHED_CALIBRATION) setIsCalibrating(false);
+    if(state === APP_STATE.FINISHED_ROUTINE) setIsDiagnosing(false);
     setReaderState(message);
     // console.log(diagnosticSiteData);
   }
@@ -98,12 +105,20 @@ const POCReader = ({ onError }:iPOCReader) => {
 
   const runRoutine = () =>
   {
+    setIsDiagnosing(true);
     POCReaderController.runDefaultRoutine()
+  }
+
+  const stopRoutine = () =>
+  {
+    setIsDiagnosing(false);
+    POCReaderController.stopRoutine();
   }
 
   const runCalibration = () =>
   {
     console.log("run calibration");
+    setIsCalibrating(true);
     POCReaderController.runCalibration();
   }
 
@@ -126,7 +141,8 @@ const POCReader = ({ onError }:iPOCReader) => {
   {
     console.log("Stop calibration");
     setOpenModal(false);
-    // POCReaderController.runDefaultRoutine()
+    setIsCalibrating(false);
+    POCReaderController.stopCalibration();
   }
   
   return (
@@ -167,11 +183,17 @@ const POCReader = ({ onError }:iPOCReader) => {
                 onAccept={continueCalibration}
                 onCancel={stopCalibration}
                 />
-              <Button onClick={runCalibration}>
-                  Calibrate
+              <Button 
+                onClick={(isCalibrating)?stopCalibration:runCalibration}
+                color={(isCalibrating)?"warning":"primary"}
+                >
+                  {(isCalibrating)?"Stop Calibration":"Calibrate"}
               </Button> 
-              <Button onClick={runRoutine}>
-                Default Routine
+              <Button 
+                onClick={(isDiagnosing)?stopRoutine:runRoutine}
+                color={(isDiagnosing)?"warning":"primary"}
+                >
+                {(isDiagnosing)?"Stop":"Run"}
               </Button>            
             </div>
           : false}
@@ -180,7 +202,7 @@ const POCReader = ({ onError }:iPOCReader) => {
           :false}
         </Col>
         <Col xs={9}>
-          {/* <LineChart siteData={diagnosticSiteData} /> */}
+          <LineChart siteData={diagnosticSiteData} />
         </Col>
       </Row>
       <Row>

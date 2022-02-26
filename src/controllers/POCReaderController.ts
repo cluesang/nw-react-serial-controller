@@ -2,7 +2,7 @@ import { SerialDeviceController } from "./SerialDeviceController";
 import * as types from "./IPOCReaderController";
 import * as enums from "./POC_enums";
 import * as defaults from "./POC_defaults";
-import { TIMEOUT } from "dns";
+import regression from "regression";
 
 function prepDiagnosticRequest(loc:string, pwmValue:number)
 {
@@ -47,6 +47,7 @@ class POCReaderController extends SerialDeviceController {
     static diagnosticBuffer: types.iDiagnosticSiteData = defaults.diagnosticBuffer;
     static activeSite = "";
     static siteSettings: types.iDiagnosticSiteSettings = defaults.siteSettings;
+    static siteResults: types.iDiagnosticResults = defaults.siteResults;
     
     static activeRoutine:types.iDiagnosticRoutineStep[]|undefined;
     static activeRoutineIndex = 0;
@@ -95,6 +96,8 @@ class POCReaderController extends SerialDeviceController {
                         if (message.payload.loc)
                         {
                             this.activeSite = message.payload.loc;
+                            this.diagnosticBuffer[this.activeSite] = 
+                                defaults.diagnosticBuffer[this.activeSite];
                         }
                     }
                 }
@@ -103,17 +106,11 @@ class POCReaderController extends SerialDeviceController {
                 {
                     // console.log(message)
                     this.setState(enums.READER_STATE.FINISHED_DIAGNOSTIC);   
+                    this.fitData();
                     this.activeSite = "";
-
                     if(this.activeRoutine)
                     {
-                        if(this.activeRoutine.length === this.activeRoutineIndex)
-                        {
-                            this.stopRoutine();
-                            if(this.activeCalibrationRoutine) this.continueCalibration();
-                        } else {
-                            this.continueRoutine();
-                        }
+                        this.continueRoutine();
                     }           
                 }
                 break;
@@ -157,7 +154,8 @@ class POCReaderController extends SerialDeviceController {
                     // console.log(message)
                     this.setState(enums.READER_STATE.RESET);     
                     this.activeSite = "";      
-                    this.stopRoutine();            
+                    this.stopRoutine();   
+                    this.stopCalibration();            
                 }
                 break;
             case "undefined":
@@ -174,6 +172,18 @@ class POCReaderController extends SerialDeviceController {
             default:
                 break;
         }
+    }
+    static fitData() {
+        const data = this.diagnosticBuffer[this.activeSite];
+        const pairs = data.times.map((time, index) => {
+            const dataPoint:regression.DataPoint = [time, data.voltages[index]];
+            return dataPoint;
+        });
+        const results = regression.linear(pairs);
+        const [slope, intercept] = results.equation;
+        this.siteResults[this.activeSite].slope = slope;
+        this.siteResults[this.activeSite].intercept = intercept;
+        this.siteResults[this.activeSite].r2 = results.r2;
     }
     static retryLastReq() {
         if(this.alreadyRetrying) return
@@ -209,7 +219,6 @@ class POCReaderController extends SerialDeviceController {
             this.incompleteFlag = false;
         }
 
-        console.log(serialData);
         const messages = serialData.split("\r\n")
                     .filter(line => line.length > 0)
                     .map((line) => {
@@ -341,10 +350,12 @@ class POCReaderController extends SerialDeviceController {
         this.diagnosticDataCallback(this.diagnosticBuffer);
     }
 
-    static resetBox(connectionId:number)
+    static resetBox()
     {
-        const command = POCReaderController.genCommand(enums.READER_ACTION.RESET);
-        POCReaderController.send(connectionId,command);
+        if(this.connectionId) {
+            const command = POCReaderController.genCommand(enums.READER_ACTION.RESET);
+            POCReaderController.send(this.connectionId,command);
+        }
     }
 
     static req(command:string)
@@ -357,6 +368,8 @@ class POCReaderController extends SerialDeviceController {
     {
        this.activeRoutine = routine;
        this.activeRoutineIndex = 0;
+       this.diagnosticBuffer = defaults.diagnosticBuffer;
+       this.setState(enums.APP_STATE.STARTING_ROUTINE);
        this.continueRoutine();
     }
 
@@ -364,6 +377,19 @@ class POCReaderController extends SerialDeviceController {
     {
         if(this.activeRoutine && this.connectionId)
         {
+            if(this.activeRoutine.length === this.activeRoutineIndex)
+            {
+                this.stopRoutine();
+                this.setState(enums.APP_STATE.FINISHED_ROUTINE);
+                if(this.activeCalibrationRoutine) 
+                {
+                    this.continueCalibration();
+                } else {
+                    this.setState(enums.APP_STATE.FINISHED_ROUTINE);
+                }
+                return
+            }
+
             console.log("Running step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
             const {loc, pwm} = this.activeRoutine[this.activeRoutineIndex];
             setTimeout(()=>{
@@ -407,6 +433,7 @@ class POCReaderController extends SerialDeviceController {
             if(this.activeCalibrationRoutine.length === this.activeCalibrationRoutineIndex)
             {
                 this.stopCalibration();
+                this.setState(enums.APP_STATE.FINISHED_CALIBRATION);
                 return
             }
 
@@ -417,6 +444,7 @@ class POCReaderController extends SerialDeviceController {
             }
             prompt.cancelAction = ()=>{
                 this.stopCalibration();
+                this.setState(enums.APP_STATE.CANCELED_CALIBRATION);
             }
             this.sendUserPrompt(prompt);
         }
@@ -426,6 +454,8 @@ class POCReaderController extends SerialDeviceController {
     {
         this.activeCalibrationRoutine = undefined;
         this.activeCalibrationRoutineIndex = 0;
+        this.stopRoutine();
+        this.resetBox();
     }
 
     static runCalibration()

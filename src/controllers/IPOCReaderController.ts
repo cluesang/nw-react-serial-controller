@@ -23,6 +23,17 @@ export interface iDiagnosticSiteSettings {
     [key: string]: {
        pwm: number;
        enable: boolean;
+       slope: number|undefined;
+       intercept: number|undefined;
+       r2: number|undefined;
+    }
+}
+
+export interface iDiagnosticResults {
+    [key: string]: {
+       slope: number|undefined;
+       intercept: number|undefined;
+       r2: number|undefined;
     }
 }
 

@@ -43,7 +43,7 @@ const CalibrationModal = ({ prompt, open = false, onAccept, onCancel }: iCalibra
             > 
             Calibrate 
             </Button> */}
-            < Modal isOpen = { modal } toggle = { toggle } >
+            < Modal isOpen = { modal } toggle = { toggle } backdrop={"static"}>
                 <ModalHeader toggle={ toggle }> Calibartion </ModalHeader>
                 < ModalBody >
                     { (prompt)?prompt.dialog:false }
