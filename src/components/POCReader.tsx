@@ -43,7 +43,7 @@ const ReaderAction = ({action,disabled=false}:iReaderAction) =>
   return (
     <Button
       onClick={sendAction}
-      color={"info"}
+      color={"success"}
       disabled={disabled}
     >
       {action}
@@ -176,26 +176,22 @@ const POCReader = ({ onError }:iPOCReader) => {
           </span>
         </Col>
         <Col xs={4} className={"btn btn-group"}>
-          {(connectionId)?
-              <>
-                <ReaderAction 
-                  disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
-                  action={READER_ACTION.INITIALIZE}
-                />
-                <ReaderAction 
-                  disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
-                  action={READER_ACTION.BLINK}
-                />
-                <ReaderAction 
-                  disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
-                  action={READER_ACTION.GET_METADATA}
-                />
-                <ReaderAction 
-                  disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
-                  action={READER_ACTION.RESET}
-                />
-              </>
-          :false}
+           <ReaderAction 
+              disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
+              action={READER_ACTION.INITIALIZE}
+            />
+            <ReaderAction 
+              disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
+              action={READER_ACTION.BLINK}
+            />
+            <ReaderAction 
+              disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
+              action={READER_ACTION.GET_METADATA}
+            />
+            <ReaderAction 
+              disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
+              action={READER_ACTION.RESET}
+            />
           {/* <SerialManager 
             enableSend={false}
             enableMonitor={false}
@@ -208,8 +204,7 @@ const POCReader = ({ onError }:iPOCReader) => {
       </Row>
       <Row>
         <Col xs={4}>
-          {(connectionId)?
-            <div className='d-flex m-2 p-2 justify-content-between btn-group'>
+           <div className='d-flex m-2 p-2 justify-content-between btn-group'>
               <Button 
                 onClick={(isCalibrating)?stopCalibration:runCalibration}
                 color={(isCalibrating)?"warning":"primary"}
@@ -225,15 +220,10 @@ const POCReader = ({ onError }:iPOCReader) => {
                 {(isDiagnosing)?"Stop":"Run"}
               </Button>            
             </div>
-          : false}
-          {(connectionId)?
-            <DiagnosticButtons onSingleSiteRun={onSingleSiteRun} />
-          :false}
+          <DiagnosticButtons onSingleSiteRun={onSingleSiteRun} />
         </Col>
         <Col xs={8}>
-          {(connectionId)?
-            <LineChart siteData={diagnosticSiteData} />
-          :false}
+          <LineChart siteData={diagnosticSiteData} />
         </Col>
       </Row>
       <Row>

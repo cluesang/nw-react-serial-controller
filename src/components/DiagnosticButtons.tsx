@@ -19,13 +19,24 @@ interface iDiagnosticButton
   disabled?: boolean;
   isActive?: boolean;
   manualMode?:boolean;
+  isRunningDiagnostic?:boolean;
   onRun: (loc:string)=>void;
 }
-const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=true, onRun}:iDiagnosticButton) =>
+const DiagnosticButton = ({
+  loc, 
+  pwm, 
+  disabled=false, 
+  isActive=false, 
+  manualMode=true,
+  isRunningDiagnostic=false, 
+  onRun
+}:iDiagnosticButton) =>
 {
   const [enable, setEnable] = useState<boolean>(!disabled);
   const [userPWM, setUserPWM] = useState<number>(pwm);
   const [coolDowned, setCoolDowned] = useState<boolean>(true);
+
+  // useEffect(()=>setEnable(!disabled),[disabled]);
 
   const toggleEnable = (event:React.ChangeEvent<HTMLInputElement>) => {
     const enableUpdate = event.target.checked;
@@ -64,7 +75,7 @@ const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=
           <Input 
             type={"switch"}
             checked={enable}
-            disabled={isActive||!manualMode||!coolDowned}
+            disabled={isActive||!manualMode||!coolDowned||isRunningDiagnostic}
             onChange={(evt)=>toggleEnable(evt)}
             style={{ width: "2.5em", height: "1.5em" }}
             />
@@ -74,7 +85,7 @@ const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=
             className={"btn btn-primary"}
             color={(isActive)?"danger":"primary"}
             onClick={runDiagnostic}
-            disabled={!enable||!manualMode||!coolDowned}
+            disabled={!enable||!manualMode||!coolDowned||(isRunningDiagnostic && !isActive)}
           >
             {loc}
           </Button>
@@ -93,7 +104,7 @@ const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=
             max={255}
             type="range"
             value={userPWM} 
-            disabled={(isActive||!manualMode||!coolDowned||!enable)}
+            disabled={(isActive||!manualMode||!coolDowned||!enable||isRunningDiagnostic)}
             onChange={(evt)=>handlePWMChange(evt)} 
           />
       </div>
@@ -114,23 +125,21 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
   {
     let buttons = [];
     for (const site in READER_SITES)
-    {
-      const disableButton = (POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC
-                      && POCReaderController.activeSite !== site)
-                      || !POCReaderController.siteSettings[site].enable;
-                      
+    {                      
       const manualMode = (POCReaderController.activeRoutine === undefined
                         && POCReaderController.activeCalibrationRoutine === undefined
                         && !(POCReaderController.state === READER_STATE.DISCONNECTED));
       const pwm = POCReaderController.siteSettings[site].pwm;
       const isActive = POCReaderController.activeSite === site;
+      const isRunningDiagnostic = POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC;
       buttons.push( 
         <DiagnosticButton 
           loc={site} 
           pwm={pwm} 
-          disabled={disableButton}
+          disabled={!POCReaderController.siteSettings[site].enable}
           manualMode={manualMode}
           isActive={isActive}
+          isRunningDiagnostic={isRunningDiagnostic}
           onRun={onSingleSiteRun}
         />
         )

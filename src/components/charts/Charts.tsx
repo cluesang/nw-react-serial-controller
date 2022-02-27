@@ -23,6 +23,7 @@ ChartJS.register(
 );
 
 export const options = {
+  scales: {},
   responsive: true,
   plugins: {
     legend: {
