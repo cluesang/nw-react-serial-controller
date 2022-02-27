@@ -62,6 +62,7 @@ const POCReader = ({ onError }:iPOCReader) => {
   const [userPrompt, setUserPrompt] = useState<userPrompt>();
   const [isCalibrating, setIsCalibrating] = useState<boolean>(false);
   const [isDiagnosing, setIsDiagnosing] = useState<boolean>(false);
+  const [isSingleSiteRunning, setIsSingleSiteRunning] = useState<boolean>(false);
   
 
   useEffect(() => {
@@ -92,10 +93,12 @@ const POCReader = ({ onError }:iPOCReader) => {
   {
     if(state === APP_STATE.FINISHED_CALIBRATION) setIsCalibrating(false);
     if(state === APP_STATE.FINISHED_ROUTINE) setIsDiagnosing(false);
+    if(state === READER_STATE.FINISHED_DIAGNOSTIC && isSingleSiteRunning) setIsSingleSiteRunning(false);
     if(state === READER_STATE.RESET)
     {
       setIsCalibrating(false);
       setIsDiagnosing(false);
+      setIsSingleSiteRunning(false);
     }
     setReaderState(message);
     // console.log(diagnosticSiteData);
@@ -149,6 +152,8 @@ const POCReader = ({ onError }:iPOCReader) => {
     setIsCalibrating(false);
     POCReaderController.stopCalibration();
   }
+
+  const onSingleSiteRun = () => setIsSingleSiteRunning(true);
   
   return (
     <Container>
@@ -191,21 +196,21 @@ const POCReader = ({ onError }:iPOCReader) => {
               <Button 
                 onClick={(isCalibrating)?stopCalibration:runCalibration}
                 color={(isCalibrating)?"warning":"primary"}
-                disabled={isDiagnosing&&!isCalibrating}
+                disabled={isDiagnosing&&!isCalibrating || isSingleSiteRunning}
                 >
                   {(isCalibrating)?"Stop Calibration":"Calibrate"}
               </Button> 
               <Button 
                 onClick={(isDiagnosing)?stopRoutine:runRoutine}
                 color={(isDiagnosing)?"warning":"primary"}
-                disabled={isCalibrating}
+                disabled={(isCalibrating || isSingleSiteRunning)}
                 >
                 {(isDiagnosing)?"Stop":"Run"}
               </Button>            
             </div>
           : false}
           {(connectionId)?
-            <DiagnosticButtons />
+            <DiagnosticButtons onSingleSiteRun={onSingleSiteRun} disabled={isDiagnosing}/>
           :false}
         </Col>
         <Col xs={8}>

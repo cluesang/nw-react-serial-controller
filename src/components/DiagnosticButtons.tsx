@@ -17,12 +17,15 @@ interface iDiagnosticButton
   loc: string;
   pwm: number;
   disabled?: boolean;
-  reset?: boolean;
+  isActive?: boolean;
+  manualMode?:boolean;
+  onRun: (loc:string)=>void;
 }
-const DiagnosticButton = ({loc, pwm, disabled=false, reset=false}:iDiagnosticButton) =>
+const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=true, onRun}:iDiagnosticButton) =>
 {
   const [enable, setEnable] = useState<boolean>(!disabled);
   const [userPWM, setUserPWM] = useState<number>(pwm);
+  const [coolDowned, setCoolDowned] = useState<boolean>(true);
 
   const toggleEnable = (event:React.ChangeEvent<HTMLInputElement>) => {
     console.log(event.target.checked);
@@ -40,13 +43,20 @@ const DiagnosticButton = ({loc, pwm, disabled=false, reset=false}:iDiagnosticBut
 
   const runDiagnostic = () =>
   {
-    if(reset)
+    if(isActive)
     {
       POCReaderController.resetBox();
+      setCoolDowned(false);
+      startCoolDownTimer();
     } else {
       POCReaderController.runDiagnostic(loc,pwm);
+      setCoolDowned(false);
+      startCoolDownTimer();
+      onRun(loc);
     }
   }
+
+  const startCoolDownTimer = () => setTimeout(()=>setCoolDowned(true),1500);
 
   return (
     <>
@@ -55,7 +65,7 @@ const DiagnosticButton = ({loc, pwm, disabled=false, reset=false}:iDiagnosticBut
           <Input 
             type={"switch"}
             checked={enable}
-            disabled={reset}
+            disabled={isActive||!manualMode||!coolDowned}
             onChange={(evt)=>toggleEnable(evt)}
             style={{ width: "2.5em", height: "1.5em" }}
             />
@@ -63,9 +73,9 @@ const DiagnosticButton = ({loc, pwm, disabled=false, reset=false}:iDiagnosticBut
         <div className={"btn-group mx-2"}>
           <Button
             className={"btn btn-primary"}
-            color={(reset)?"danger":"primary"}
+            color={(isActive)?"danger":"primary"}
             onClick={runDiagnostic}
-            disabled={!enable}
+            disabled={!enable||!manualMode||!coolDowned}
           >
             {loc}
           </Button>
@@ -84,7 +94,7 @@ const DiagnosticButton = ({loc, pwm, disabled=false, reset=false}:iDiagnosticBut
             max={255}
             type="range"
             value={userPWM} 
-            disabled={reset}
+            disabled={(isActive || !manualMode||!coolDowned)}
             onChange={(evt)=>handlePWMChange(evt)} 
           />
       </div>
@@ -94,64 +104,85 @@ const DiagnosticButton = ({loc, pwm, disabled=false, reset=false}:iDiagnosticBut
 }
 
 
-// interface iDiagnosticButtons
-// {
-//   // connectionId: number;
-//   // sites: {loc:string, pwm:number}[];
-// }
-const DiagnosticButtons = ({}) =>
+interface iDiagnosticButtons
 {
-  let Buttons = []
-  for (const site in READER_SITES)
+  // connectionId: number;
+  // sites: {loc:string, pwm:number}[];
+  onSingleSiteRun: (loc:string)=>void;
+  disabled?:boolean
+}
+const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) =>
+{
+  const genButtons = () =>
   {
-    const disable = (POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC
-                    && POCReaderController.activeSite !== site)
-                    || !POCReaderController.siteSettings[site].enable;
-    const pwm = POCReaderController.siteSettings[site].pwm;
-    const isActive = POCReaderController.activeSite === site;
-
-    Buttons.push( 
-      <>
-        <DiagnosticButton 
-          loc={site} 
-          pwm={pwm} 
-          disabled={disable}
-          reset={isActive}
-        />
-      </>)
+    let buttons = [];
+    for (const site in READER_SITES)
+    {
+      const disableButton = (POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC
+                      && POCReaderController.activeSite !== site)
+                      || !POCReaderController.siteSettings[site].enable;
+      const manualMode = (POCReaderController.activeRoutine === undefined
+                        && POCReaderController.activeCalibrationRoutine === undefined);
+      const pwm = POCReaderController.siteSettings[site].pwm;
+      const isActive = POCReaderController.activeSite === site;
+      console.log(disabled);
+      buttons.push( 
+        <>
+          <DiagnosticButton 
+            loc={site} 
+            pwm={pwm} 
+            // disabled={(disableButton||disableButtons)}
+            disabled={disableButton}
+            manualMode={manualMode}
+            isActive={isActive}
+            onRun={onSingleSiteRun}
+          />
+        </>)
+    }
+    return buttons;
   }
- 
+  let buttons = genButtons();
+
+  // const [disableButtons, setDisableButtons] = useState<boolean>(disabled);
+  // const [buttons,setButtons] = useState<JSX.Element[]>(genButtons());
+
+  // useEffect(()=>{
+  //   setButtons(genButtons());
+  //   setDisableButtons(disabled);
+  //   console.log(disableButtons);
+  // },[disabled]);
+
   return (
     <Row xs={2}>
       <Col className='p-0'>
         <ListGroup flush>
           <ListGroupItem>
-            {Buttons[3]}
+            {buttons[3]}
           </ListGroupItem>
           <ListGroupItem>
-            {Buttons[2]}
+            {buttons[2]}
           </ListGroupItem>
           <ListGroupItem>
-            {Buttons[1]}
+            {buttons[1]}
           </ListGroupItem>
           <ListGroupItem>
-            {Buttons[0]}
+            {buttons[0]}
           </ListGroupItem>
         </ListGroup>
       </Col>
       <Col className='p-0'>
         <ListGroup flush>
         <ListGroupItem>
-            {Buttons[7]}
+            {buttons[7]}
           </ListGroupItem>
           <ListGroupItem>
-            {Buttons[6]}
+            {buttons[6]}
           </ListGroupItem>
           <ListGroupItem>
-            {Buttons[5]}
+            {buttons[5]}
           </ListGroupItem>
           <ListGroupItem>
-            {Buttons[4]}
+            {buttons[4]}
           </ListGroupItem>
         </ListGroup>
       </Col>
