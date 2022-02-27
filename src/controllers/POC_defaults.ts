@@ -38,35 +38,35 @@ export const diagnosticBuffer:types.iDiagnosticSiteData = {
 
 export const siteSettings = {
     "A1": {
-        pwm: 6,
+        pwm: 94,
         enable: true
     }
 ,   "A2": {
-        pwm: 13,
+        pwm: 69,
         enable: true
     }
 ,   "A3": {
-        pwm: 27,
+        pwm: 139,
         enable: true
     }
 ,   "A4": {
-        pwm: 10,
+        pwm: 101,
         enable: true
     }
 ,   "B1": {
-        pwm: 15,
+        pwm: 101,
         enable: true
     }
 ,   "B2": {
-        pwm: 25,
+        pwm: 101,
         enable: true
     }
 ,   "B3": {
-        pwm: 14,
+        pwm: 68,
         enable: true
     }
 ,   "B4": {
-        pwm: 19,
+        pwm: 106,
         enable: true
     }
 };

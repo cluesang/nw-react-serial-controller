@@ -5,6 +5,9 @@ import {
 , ListGroup
 , ListGroupItem
 , Button
+, Input
+, Form,
+FormGroup
 } from 'reactstrap';
 import {POCReaderController} from '../controllers/POCReaderController';
 import {APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from "../controllers/POC_enums";
@@ -30,13 +33,42 @@ const DiagnosticButton = ({connectionId, loc, pwm, disabled=false, reset=false}:
   }
 
   return (
-    <Button
-      color={(reset)?"danger":"primary"}
-      onClick={runDiagnostic}
-      disabled={disabled}
-    >
-      {loc}
-    </Button>
+    <>
+      <Form inline className={"d-flex justify-content-center align-items-center"}>
+        <FormGroup switch>
+          <Input 
+            type={"switch"}
+            style={{ width: "2.5em", height: "1.5em" }}
+            />
+        </FormGroup>
+        <div className={"btn-group mx-2"}>
+          <Button
+            className={"btn btn-primary"}
+            color={(reset)?"danger":"primary"}
+            onClick={runDiagnostic}
+            disabled={disabled}
+          >
+            {loc}
+          </Button>
+          <Input 
+            style={{ width: "65px" }}
+            className={"text-end"}
+            value={pwm}
+            disabled={true}
+          />
+        </div>
+      </Form>
+      <div className={"d-flex justify-content-center align-items-center"}>
+        <Input
+            className={"ml-3"}
+            id="exampleRange"
+            name="range"
+            type="range"
+            value={(pwm/255)*100}
+          />
+      </div>
+    </>
+    
     )
 }
 
@@ -65,7 +97,7 @@ const DiagnosticButtons = ({connectionId}:iDiagnosticButtons) =>
           pwm={pwm} 
           disabled={disable}
           reset={isActive}
-        /> {pwm}
+        />
       </>)
   }
  

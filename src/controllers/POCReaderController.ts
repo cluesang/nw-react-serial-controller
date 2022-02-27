@@ -61,7 +61,7 @@ class POCReaderController extends SerialDeviceController {
     static lastReq: string;
     static alreadyRetrying: boolean;
     static enableDiagnosticDataCallback:boolean = true;
-    static diagnosticDataCallbackPeriod:number = 250;
+    static diagnosticDataCallbackPeriod:number = 400;
 
     static parseMessages(message:types.iSerialMessage)
     {
@@ -393,7 +393,6 @@ class POCReaderController extends SerialDeviceController {
             if(this.activeRoutine.length === this.activeRoutineIndex)
             {
                 this.stopRoutine();
-                this.setState(enums.APP_STATE.FINISHED_ROUTINE);
                 if(this.activeCalibrationRoutine) 
                 {
                     this.continueCalibration();
@@ -420,7 +419,7 @@ class POCReaderController extends SerialDeviceController {
     {
         this.activeRoutine = undefined;
         this.activeRoutineIndex = 0;
-        this.resetBox();
+        if(this.activeCalibrationRoutine === undefined) this.resetBox();
     }
 
     static setConnectionId(connectionId:number|undefined)
@@ -442,7 +441,6 @@ class POCReaderController extends SerialDeviceController {
 
     static continueCalibration()
     {
-        
         // send out prompt
         // waint for user okay
         // send routine to start routine.
@@ -507,7 +505,7 @@ class POCReaderController extends SerialDeviceController {
         {
             if(this.siteSettings[site].enable)
             {
-                const newPWM = this.adjustSitePWMValue(site,30);
+                const newPWM = this.adjustSitePWMValue(site,enums.TARGET_TIME.t10);
                 if(newPWM) this.siteSettings[site].pwm = newPWM;
             }
         }

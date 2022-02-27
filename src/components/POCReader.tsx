@@ -174,7 +174,7 @@ const POCReader = ({ onError }:iPOCReader) => {
         </Col>
       </Row>
       <Row>
-        <Col xs={3}>
+        <Col xs={4}>
           {(connectionId)?
             <div className='d-flex m-2 p-2 justify-content-between'>
               <CalibrationModal 
@@ -201,7 +201,7 @@ const POCReader = ({ onError }:iPOCReader) => {
             <DiagnosticButtons connectionId={connectionId} />
           :false}
         </Col>
-        <Col xs={9}>
+        <Col xs={8}>
           <LineChart siteData={diagnosticSiteData} />
         </Col>
       </Row>

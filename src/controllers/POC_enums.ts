@@ -54,3 +54,9 @@ export enum USER_DIALOG {
 ,   CALIBRATION_SLIDE_1 = "CALIBRATION_SLIDE_1"
 ,   CALIBRATION_SLIDE_0 = "CALIBRATION_SLIDE_0"
 }
+
+export enum TARGET_TIME {
+    t30 = 30
+,   t20 = 20
+,   t10 = 10
+}
