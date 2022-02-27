@@ -92,6 +92,11 @@ const POCReader = ({ onError }:iPOCReader) => {
   {
     if(state === APP_STATE.FINISHED_CALIBRATION) setIsCalibrating(false);
     if(state === APP_STATE.FINISHED_ROUTINE) setIsDiagnosing(false);
+    if(state === READER_STATE.RESET)
+    {
+      setIsCalibrating(false);
+      setIsDiagnosing(false);
+    }
     setReaderState(message);
     // console.log(diagnosticSiteData);
   }
@@ -186,19 +191,21 @@ const POCReader = ({ onError }:iPOCReader) => {
               <Button 
                 onClick={(isCalibrating)?stopCalibration:runCalibration}
                 color={(isCalibrating)?"warning":"primary"}
+                disabled={isDiagnosing&&!isCalibrating}
                 >
                   {(isCalibrating)?"Stop Calibration":"Calibrate"}
               </Button> 
               <Button 
                 onClick={(isDiagnosing)?stopRoutine:runRoutine}
                 color={(isDiagnosing)?"warning":"primary"}
+                disabled={isCalibrating}
                 >
                 {(isDiagnosing)?"Stop":"Run"}
               </Button>            
             </div>
           : false}
           {(connectionId)?
-            <DiagnosticButtons connectionId={connectionId} />
+            <DiagnosticButtons />
           :false}
         </Col>
         <Col xs={8}>

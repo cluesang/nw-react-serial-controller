@@ -14,14 +14,30 @@ import {APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from "../controlle
 
 interface iDiagnosticButton
 {
-  connectionId: number;
   loc: string;
   pwm: number;
   disabled?: boolean;
   reset?: boolean;
 }
-const DiagnosticButton = ({connectionId, loc, pwm, disabled=false, reset=false}:iDiagnosticButton) =>
+const DiagnosticButton = ({loc, pwm, disabled=false, reset=false}:iDiagnosticButton) =>
 {
+  const [enable, setEnable] = useState<boolean>(!disabled);
+  const [userPWM, setUserPWM] = useState<number>(pwm);
+
+  const toggleEnable = (event:React.ChangeEvent<HTMLInputElement>) => {
+    console.log(event.target.checked);
+    const enableUpdate = event.target.checked;
+    POCReaderController.updateEnable(loc, enableUpdate);
+    setEnable(enableUpdate);
+  };
+
+  const handlePWMChange = (event:React.ChangeEvent<HTMLInputElement>) =>
+  {
+    const pwmUpdate = parseInt(event.target.value,10);
+    POCReaderController.updatePWM(loc, pwmUpdate);
+    setUserPWM(pwmUpdate);
+  }
+
   const runDiagnostic = () =>
   {
     if(reset)
@@ -38,6 +54,9 @@ const DiagnosticButton = ({connectionId, loc, pwm, disabled=false, reset=false}:
         <FormGroup switch>
           <Input 
             type={"switch"}
+            checked={enable}
+            disabled={reset}
+            onChange={(evt)=>toggleEnable(evt)}
             style={{ width: "2.5em", height: "1.5em" }}
             />
         </FormGroup>
@@ -46,14 +65,14 @@ const DiagnosticButton = ({connectionId, loc, pwm, disabled=false, reset=false}:
             className={"btn btn-primary"}
             color={(reset)?"danger":"primary"}
             onClick={runDiagnostic}
-            disabled={disabled}
+            disabled={!enable}
           >
             {loc}
           </Button>
           <Input 
             style={{ width: "65px" }}
             className={"text-end"}
-            value={pwm}
+            value={userPWM}
             disabled={true}
           />
         </div>
@@ -61,10 +80,12 @@ const DiagnosticButton = ({connectionId, loc, pwm, disabled=false, reset=false}:
       <div className={"d-flex justify-content-center align-items-center"}>
         <Input
             className={"ml-3"}
-            id="exampleRange"
-            name="range"
+            min={0}
+            max={255}
             type="range"
-            value={(pwm/255)*100}
+            value={userPWM} 
+            disabled={reset}
+            onChange={(evt)=>handlePWMChange(evt)} 
           />
       </div>
     </>
@@ -73,12 +94,12 @@ const DiagnosticButton = ({connectionId, loc, pwm, disabled=false, reset=false}:
 }
 
 
-interface iDiagnosticButtons
-{
-  connectionId: number;
-  // sites: {loc:string, pwm:number}[];
-}
-const DiagnosticButtons = ({connectionId}:iDiagnosticButtons) =>
+// interface iDiagnosticButtons
+// {
+//   // connectionId: number;
+//   // sites: {loc:string, pwm:number}[];
+// }
+const DiagnosticButtons = ({}) =>
 {
   let Buttons = []
   for (const site in READER_SITES)
@@ -92,7 +113,6 @@ const DiagnosticButtons = ({connectionId}:iDiagnosticButtons) =>
     Buttons.push( 
       <>
         <DiagnosticButton 
-          connectionId={connectionId} 
           loc={site} 
           pwm={pwm} 
           disabled={disable}

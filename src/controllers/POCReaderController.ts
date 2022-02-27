@@ -402,16 +402,24 @@ class POCReaderController extends SerialDeviceController {
                 return
             }
 
-            console.log("Running step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
-            
             const {loc} = this.activeRoutine[this.activeRoutineIndex];
             const {pwm, enable} = this.siteSettings[loc];
-            console.log("Running site: "+loc+" at a pwm of: "+pwm);
 
-            setTimeout(()=>{
-                if(this.connectionId) this.runDiagnostic(loc,pwm);
+            if(!enable)
+            {
+                console.log("Skipping step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
                 this.activeRoutineIndex += 1;
-            },1000);
+                setTimeout(()=>{
+                    this.continueRoutine();
+                },1000);                
+            } else {
+                console.log("Running step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
+                setTimeout(()=>{
+                    if(this.connectionId) this.runDiagnostic(loc,pwm);
+                    console.log("Running site: "+loc+" at a pwm of: "+pwm);
+                    this.activeRoutineIndex += 1;
+                },1000);
+            }
         }
     }
 
@@ -509,6 +517,16 @@ class POCReaderController extends SerialDeviceController {
                 if(newPWM) this.siteSettings[site].pwm = newPWM;
             }
         }
+    }
+
+    static updatePWM(loc:string, newPWM:number)
+    {
+        this.siteSettings[loc].pwm = newPWM;
+    }
+
+    static updateEnable(loc:string, enable:boolean)
+    {
+        this.siteSettings[loc].enable = enable;
     }
 }
 
