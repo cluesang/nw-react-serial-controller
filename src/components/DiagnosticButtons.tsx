@@ -28,7 +28,6 @@ const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=
   const [coolDowned, setCoolDowned] = useState<boolean>(true);
 
   const toggleEnable = (event:React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.checked);
     const enableUpdate = event.target.checked;
     POCReaderController.updateEnable(loc, enableUpdate);
     setEnable(enableUpdate);
@@ -94,7 +93,7 @@ const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=
             max={255}
             type="range"
             value={userPWM} 
-            disabled={(isActive || !manualMode||!coolDowned)}
+            disabled={(isActive||!manualMode||!coolDowned||!enable)}
             onChange={(evt)=>handlePWMChange(evt)} 
           />
       </div>
@@ -106,8 +105,6 @@ const DiagnosticButton = ({loc, pwm, disabled=false, isActive=false, manualMode=
 
 interface iDiagnosticButtons
 {
-  // connectionId: number;
-  // sites: {loc:string, pwm:number}[];
   onSingleSiteRun: (loc:string)=>void;
   disabled?:boolean
 }
@@ -121,36 +118,26 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
       const disableButton = (POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC
                       && POCReaderController.activeSite !== site)
                       || !POCReaderController.siteSettings[site].enable;
+                      
       const manualMode = (POCReaderController.activeRoutine === undefined
-                        && POCReaderController.activeCalibrationRoutine === undefined);
+                        && POCReaderController.activeCalibrationRoutine === undefined
+                        && !(POCReaderController.state === READER_STATE.DISCONNECTED));
       const pwm = POCReaderController.siteSettings[site].pwm;
       const isActive = POCReaderController.activeSite === site;
-      console.log(disabled);
       buttons.push( 
-        <>
-          <DiagnosticButton 
-            loc={site} 
-            pwm={pwm} 
-            // disabled={(disableButton||disableButtons)}
-            disabled={disableButton}
-            manualMode={manualMode}
-            isActive={isActive}
-            onRun={onSingleSiteRun}
-          />
-        </>)
+        <DiagnosticButton 
+          loc={site} 
+          pwm={pwm} 
+          disabled={disableButton}
+          manualMode={manualMode}
+          isActive={isActive}
+          onRun={onSingleSiteRun}
+        />
+        )
     }
     return buttons;
   }
   let buttons = genButtons();
-
-  // const [disableButtons, setDisableButtons] = useState<boolean>(disabled);
-  // const [buttons,setButtons] = useState<JSX.Element[]>(genButtons());
-
-  // useEffect(()=>{
-  //   setButtons(genButtons());
-  //   setDisableButtons(disabled);
-  //   console.log(disableButtons);
-  // },[disabled]);
 
   return (
     <Row xs={2}>

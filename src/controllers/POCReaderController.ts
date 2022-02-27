@@ -175,6 +175,7 @@ class POCReaderController extends SerialDeviceController {
                 break;
         }
     }
+
     static fitData() 
     {
         const data = this.diagnosticBuffer[this.activeSite];
@@ -255,6 +256,7 @@ class POCReaderController extends SerialDeviceController {
                                                 +this.activeCalibrationRoutine.length;
             userStateMessage = calibrationRoutineMessage+" / "+userStateMessage;
         }
+        console.log("new state: "+state);
         this.stateChangeCallback(state,userStateMessage);
     }
 
@@ -369,6 +371,14 @@ class POCReaderController extends SerialDeviceController {
             const command = POCReaderController.genCommand(enums.READER_ACTION.RESET);
             POCReaderController.send(this.connectionId,command);
         }
+    }
+
+    static reset()
+    {
+        this.activeSite = "";
+        this.stopRoutine();
+        this.stopCalibration();
+        this.resetBox();
     }
 
     static req(command:string)

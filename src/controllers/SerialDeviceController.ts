@@ -32,14 +32,6 @@ export function stringToArrayBuffer(str:string):ArrayBuffer
 
 class SerialDeviceController 
 {
-    #port:chrome.serial.DeviceInfo;
-    #connectionInfo:chrome.serial.ConnectionInfo|undefined;
-
-    constructor(serialPort:chrome.serial.DeviceInfo) 
-    {
-        this.#port = serialPort;
-    }
-
     /**
      * returns list of serial ports
      * @param 
