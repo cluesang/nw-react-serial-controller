@@ -7,10 +7,10 @@ import {
     , ModalHeader
     , ModalFooter
 } from 'reactstrap';
-import { userPrompt } from '../controllers/IPOCReaderController';
+import { iUserPrompt } from '../controllers/IPOCReaderController';
 
 interface iCalibrationModal {
-    prompt?: userPrompt;
+    prompt?: iUserPrompt;
     open: boolean;
     onAccept: ()=>void;
     onCancel: ()=>void;

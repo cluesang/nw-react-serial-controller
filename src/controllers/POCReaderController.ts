@@ -57,12 +57,13 @@ class POCReaderController extends SerialDeviceController {
 
     static stateChangeCallback:(state:enums.READER_STATE|enums.APP_STATE, message:string)=>void;
     static diagnosticDataCallback:(siteData:types.iDiagnosticSiteData)=>void;
-    static userPromptCallback:(prompt:types.userPrompt)=>void
+    static userPromptCallback:(prompt:types.iUserPrompt)=>void
     static lastReq: string;
     static alreadyRetrying: boolean;
     static enableDiagnosticDataCallback:boolean = true;
     static diagnosticDataCallbackPeriod:number = 400;
     static onDiagnosticResultsCallback: (results: types.iDiagnosticResults) => void;
+    static onCalibrationCallback: (results: types.iCalibrationResults) => void;
 
     static parseMessages(message:types.iSerialMessage)
     {
@@ -109,9 +110,19 @@ class POCReaderController extends SerialDeviceController {
                 {
                     // console.log(message)
                     this.setState(enums.READER_STATE.FINISHED_DIAGNOSTIC);   
-                    const results = this.fitData();
-                    console.log(results);
-                    this.onDiagnosticResultsCallback(results);
+                    this.fitData();
+                    if(this.activeCalibrationRoutine)
+                    {
+                        const calibration_step = this.activeCalibrationRoutine[this.activeCalibrationRoutineIndex-1];
+                        const calibration_slide = calibration_step.prompt.dialog as string;
+                        const calibration_result = {
+                            [calibration_slide]: this.siteResults
+                        }
+                        this.onCalibrationCallback(calibration_result);
+                    } else {
+                        this.onDiagnosticResultsCallback(this.siteResults);
+                    }
+                    
                     this.activeSite = "";
                     if(this.activeRoutine)
                     {
@@ -179,7 +190,7 @@ class POCReaderController extends SerialDeviceController {
         }
     }
 
-    static fitData():types.iDiagnosticResults
+    static fitData()
     {
         const data = this.diagnosticBuffer[this.activeSite];
         const pairs = data.times.map((time, index) => {
@@ -193,7 +204,6 @@ class POCReaderController extends SerialDeviceController {
         this.siteResults[this.activeSite].r2 = results.r2;
         this.siteResults[this.activeSite].testDuration = data.times[data.times.length-1];
         this.siteResults[this.activeSite].pwm = this.siteSettings[this.activeSite].pwm;
-        return { [this.activeSite]: this.siteResults[this.activeSite] };
     }
 
     static retryLastReq() 
@@ -280,12 +290,17 @@ class POCReaderController extends SerialDeviceController {
         this.onDiagnosticResultsCallback = callback;
     }
 
-    static onUserPrompt(callback:(prompt:types.userPrompt)=>void)
+    static onCalibrationResults(callback:(results:types.iCalibrationResults)=>void)
+    {
+        this.onCalibrationCallback = callback;
+    }
+
+    static onUserPrompt(callback:(prompt:types.iUserPrompt)=>void)
     {
         this.userPromptCallback = callback;
     }
 
-    static sendUserPrompt(prompt:types.userPrompt)
+    static sendUserPrompt(prompt:types.iUserPrompt)
     {
         // console.log(prompt);
         this.userPromptCallback(prompt);
@@ -504,10 +519,17 @@ class POCReaderController extends SerialDeviceController {
 
     static stopCalibration()
     {
+        if(this.activeCalibrationRoutine)
+        {
+            if(this.activeCalibrationRoutineIndex === this.activeCalibrationRoutine.length)
+            {
+                this.setState(enums.APP_STATE.FINISHED_CALIBRATION);
+            }
+        }
         this.activeCalibrationRoutine = undefined;
         this.activeCalibrationRoutineIndex = 0;
         this.stopRoutine();
-        this.setState(enums.APP_STATE.FINISHED_CALIBRATION);
+       
         this.resetBox();
     }
 
@@ -538,7 +560,7 @@ class POCReaderController extends SerialDeviceController {
         {
             if(this.siteSettings[site].enable)
             {
-                const newPWM = this.adjustSitePWMValue(site,enums.TARGET_TIME.t10);
+                const newPWM = this.adjustSitePWMValue(site,enums.TARGET_TIME.t30);
                 if(newPWM) this.siteSettings[site].pwm = newPWM;
             }
         }

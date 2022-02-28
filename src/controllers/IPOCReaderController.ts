@@ -38,9 +38,7 @@ export interface iDiagnosticResults {
 }
 
 export interface iCalibrationResults {
-    [key: string]: {
-        [key: string]: iDiagnosticResults[];
-    }
+    [key: string]: iDiagnosticResults
 }
 
 export interface iDiagnosticRoutineStep {
@@ -48,12 +46,12 @@ export interface iDiagnosticRoutineStep {
 }
 
 export interface iCalibrationRoutineStep {
-    prompt: userPrompt;
+    prompt: iUserPrompt;
     steps: iDiagnosticRoutineStep[];
 }
 
-export interface userPrompt {
-    dialog: enums.USER_DIALOG;
+export interface iUserPrompt {
+    dialog: enums.CALIBRATIONS;
     acceptAction: ()=>void;
     cancelAction: ()=>void;
 }

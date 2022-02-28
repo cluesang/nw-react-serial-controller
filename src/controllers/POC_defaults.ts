@@ -142,38 +142,38 @@ export const routine:types.iDiagnosticRoutineStep[] =
 ,   {loc: "B4"}
 ]
 
-export const calibrationSlide5Prompt:types.userPrompt = {
-    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_5
+export const calibrationSlide5Prompt:types.iUserPrompt = {
+    dialog:enums.CALIBRATIONS.SLIDE_5
 ,   acceptAction:()=>{}
 ,   cancelAction:()=>{}
 }
 
-export const calibrationSlide4Prompt:types.userPrompt = {
-    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_4
+export const calibrationSlide4Prompt:types.iUserPrompt = {
+    dialog:enums.CALIBRATIONS.SLIDE_4
 ,   acceptAction:()=>{}
 ,   cancelAction:()=>{}
 }
 
-export const calibrationSlide3Prompt:types.userPrompt = {
-    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_3
+export const calibrationSlide3Prompt:types.iUserPrompt = {
+    dialog:enums.CALIBRATIONS.SLIDE_3
 ,   acceptAction:()=>{}
 ,   cancelAction:()=>{}
 }
 
-export const calibrationSlide2Prompt:types.userPrompt = {
-    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_2
+export const calibrationSlide2Prompt:types.iUserPrompt = {
+    dialog:enums.CALIBRATIONS.SLIDE_2
 ,   acceptAction:()=>{}
 ,   cancelAction:()=>{}
 }
 
-export const calibrationSlide1Prompt:types.userPrompt = {
-    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_1
+export const calibrationSlide1Prompt:types.iUserPrompt = {
+    dialog:enums.CALIBRATIONS.SLIDE_1
 ,   acceptAction:()=>{}
 ,   cancelAction:()=>{}
 }
 
-export const calibrationSlide0Prompt:types.userPrompt = {
-    dialog:enums.USER_DIALOG.CALIBRATION_SLIDE_0
+export const calibrationSlide0Prompt:types.iUserPrompt = {
+    dialog:enums.CALIBRATIONS.SLIDE_0
 ,   acceptAction:()=>{}
 ,   cancelAction:()=>{}
 }

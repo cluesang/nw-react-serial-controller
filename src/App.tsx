@@ -20,6 +20,16 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse)=>{
   console.log(request, sender, sendResponse);
 });
 
+function updateObject(obj:any, keys:any, value:any) {
+  let key = keys.shift();
+  if (keys.length > 0) {
+    let tmp:any = updateObject(obj[key], keys, value);
+    return {...obj, [key]: tmp};
+  } else {
+    return {...obj, [key]: value};
+  }
+}
+
 const App = () => {
 
   const [alertMessage, setAlertMessage] = useState<string | undefined>();
@@ -30,7 +40,7 @@ const App = () => {
   const [isDiagonsing, setIsDiagonsing] = useState<boolean>(false);
 
   const [results, setResults] = useState<types.iDiagnosticResults|undefined>();
-  const [calibrationResults, setCalibrationResults] = useState<types.iCalibrationResults>();
+  const [calibrations, setCalibrations] = useState<types.iCalibrationResults>();
 
   const toggleNotification = () => setShowNotifications(!showNotifications);
 
@@ -46,6 +56,7 @@ const App = () => {
     switch (state) {
       case enums.APP_STATE.STARTING_CALIBRATION:
         {
+          setCalibrations(undefined);
           setIsCalibrating(true);
         }
         break;
@@ -61,6 +72,7 @@ const App = () => {
         break;
       case enums.APP_STATE.STARTING_ROUTINE:
         {
+          setResults(undefined);
           setIsInRoutine(true);
         }
         break;
@@ -97,13 +109,14 @@ const App = () => {
 
   const onReaderResults = (result:types.iDiagnosticResults) =>
   {
+    setResults({...results,...result});
     console.log(results);
-    if(results)
-    {
-      setResults({...results, ...result});
-    } else {
-      setResults(result);
-    }
+  }
+
+  const onCalibration = (calibration:types.iCalibrationResults) =>
+  {
+    setCalibrations({...calibrations,...calibration});
+    console.log(calibrations);
   }
   
   const onError = (msg: string) => 
@@ -136,9 +149,16 @@ const App = () => {
             onError={onError}
             /> */}
       </Row>
+      <Row>
+        <Col>
+            {()=>JSON.stringify(results)}
+            {(results)?(results["A1"])?results["A1"].slope:false:false}
+        </Col>
+      </Row>
       <POCReader
         onStateChange={onReaderStateChange}
         onResults={onReaderResults}
+        onCalibration={onCalibration}
         onError={onError} 
       />
       <Row>

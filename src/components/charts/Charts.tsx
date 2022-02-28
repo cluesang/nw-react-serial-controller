@@ -59,6 +59,7 @@ interface iDiagnosticSiteData {
 
 interface iLineChart {
   siteData: iDiagnosticSiteData
+, activeSite: string
 }
 
 interface iGraphData {
@@ -70,12 +71,13 @@ interface iGraphData {
 
 const timeSequence30s = Array.from({length: (30/0.085)}, (_, i) => i*0.085)
 
-const LineChart = ({siteData}:iLineChart) =>
+const LineChart = ({siteData,activeSite="A1"}:iLineChart) =>
 {
   // const [graphData, setGraphData] = useState<iGraphData>();
   const [datasets, setDatasets] = useState<iGraphData[]>([]);
   const [times, setTimes] = useState<string[]>([]);
   const [voltages, setVoltages] = useState<number[]>([]);
+  const [dim, setDim] = useState<string>("0.25");
 
   useEffect(()=>{
 
@@ -94,59 +96,64 @@ const LineChart = ({siteData}:iLineChart) =>
     if(siteData["A1"]) setTimes(time_lables);
   },[siteData]);
 
-  // return <Line options={options} data={(graphData)?graphData:data} />;
   return <Line 
-            options={options} 
+            options={{ 
+              maintainAspectRatio: false, 
+              animation: false,
+              onResize: (ref)=>{ref.render()}
+            }} 
+            width={"100%"}
+            height={"100%"}
             data={{
               labels:times,
               datasets: [
                 {
                   label: 'A1',
                   data: siteData["A1"].voltages,
-                  borderColor: 'rgb(13, 110, 253)',
-                  backgroundColor: 'rgbA(13, 110, 253, 0.5)',
+                  borderColor: 'rgba(13, 110, 253, '+((activeSite==="A1")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(13, 110, 253, 0.1)',
                 }
               ,{
                   label: 'A2',
                   data: siteData["A2"].voltages,
-                  borderColor: 'rgb(102, 16, 242)',
-                  backgroundColor: 'rgba(102, 16, 242, 0.5)',
+                  borderColor: 'rgba(102, 16, 242, '+((activeSite==="A2")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(102, 16, 242, 0.1)',
                 }
               ,{
                   label: 'A3',
                   data: siteData["A3"].voltages,
-                  borderColor: 'rgb(255, 99, 132)',
-                  backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                  borderColor: 'rgba(255, 99, 132, '+((activeSite==="A3")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(255, 99, 132, 0.1)',
                 }
               ,{
                   label: 'A4',
                   data: siteData["A4"].voltages,
-                  borderColor: 'rgb(214, 51, 132)',
-                  backgroundColor: 'rgba(214, 51, 132, 0.5)',
+                  borderColor: 'rgba(214, 51, 132, '+((activeSite==="A4")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(214, 51, 132, 0.1)',
                 }
               , {
                   label: 'B1',
                   data: siteData["B1"].voltages,
-                  borderColor: 'rgb(220, 53, 69)',
-                  backgroundColor: 'rgba(220, 53, 69, 0.5)',
+                  borderColor: 'rgba(220, 53, 69, '+((activeSite==="B1")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(220, 53, 69, 0.1)',
                 }
               ,{
                   label: 'B2',
                   data: siteData["B2"].voltages,
-                  borderColor: 'rgb(253, 126, 20)',
-                  backgroundColor: 'rgba(253, 126, 20, 0.5)',
+                  borderColor: 'rgba(253, 126, 20, '+((activeSite==="B2")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(253, 126, 20, 0.1)',
                 }
               ,{
                   label: 'B3',
                   data: siteData["B3"].voltages,
-                  borderColor: 'rgb(255, 193, 7)',
-                  backgroundColor: 'rgba(255, 193, 7, 0.5)',
+                  borderColor: 'rgba(255, 193, 7, '+((activeSite==="B3")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(255, 193, 7, 0.1)',
                 }
               ,{
                   label: 'B4',
                   data: siteData["B4"].voltages,
-                  borderColor: 'rgb(25, 135, 84)',
-                  backgroundColor: 'rgba(25, 135, 84, 0.5)',
+                  borderColor: 'rgba(25, 135, 84, '+((activeSite==="B4")?"1.0":dim)+')',
+                  backgroundColor: 'rgba(25, 135, 84, 0.1)',
                 }
               ],
             }} 

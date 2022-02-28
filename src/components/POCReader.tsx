@@ -18,7 +18,7 @@ import {POCReaderController} from '../controllers/POCReaderController';
 import {APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from "../controllers/POC_enums";
 import * as defaults from "../controllers/POC_defaults";
 import { LineChart } from './charts/Charts';
-import { userPrompt, iDiagnosticResults } from '../controllers/IPOCReaderController';
+import { iCalibrationResults, iDiagnosticResults, iUserPrompt } from '../controllers/IPOCReaderController';
 
 interface iDiagnosticSiteData {
   [key: string]: {
@@ -55,15 +55,16 @@ interface iPOCReader
 {
   onStateChange:(state:string, message:string)=>void;
   onResults:(results:iDiagnosticResults)=>void;
+  onCalibration:(calibration:iCalibrationResults)=>void;
   onError:(msg:string)=>void;
 }
-const POCReader = ({ onStateChange, onResults, onError }:iPOCReader) => {
+const POCReader = ({ onStateChange, onResults, onCalibration, onError }:iPOCReader) => {
 
   const [readerState, setReaderState] = useState(POCReaderController.state as string);
   const [connectionId, setConnectionId] = useState<number>();
   const [diagnosticSiteData, setDiagnosticSiteData] = useState<iDiagnosticSiteData>(defaults.diagnosticBuffer);
   const [openModal, setOpenModal] = useState<boolean>(false);
-  const [userPrompt, setUserPrompt] = useState<userPrompt>();
+  const [userPrompt, setUserPrompt] = useState<iUserPrompt>();
   const [isCalibrating, setIsCalibrating] = useState<boolean>(false);
   const [isDiagnosing, setIsDiagnosing] = useState<boolean>(false);
   const [isSingleSiteRunning, setIsSingleSiteRunning] = useState<boolean>(false);
@@ -119,6 +120,7 @@ const POCReader = ({ onStateChange, onResults, onError }:iPOCReader) => {
   POCReaderController.onDiagnosticData(onDiagnosticData);
 
   POCReaderController.onDiagnosticResults(onResults);
+  POCReaderController.onCalibrationResults(onCalibration);
 
   const runRoutine = () =>
   {
@@ -140,7 +142,7 @@ const POCReader = ({ onStateChange, onResults, onError }:iPOCReader) => {
     POCReaderController.runCalibration();
   }
 
-  const promptUser = (userPrompt:userPrompt) =>
+  const promptUser = (userPrompt:iUserPrompt) =>
   {
     // console.log("user prompt: "+prompt);
     setUserPrompt(userPrompt);
@@ -211,13 +213,13 @@ const POCReader = ({ onStateChange, onResults, onError }:iPOCReader) => {
                 color={(isDiagnosing)?"warning":"primary"}
                 disabled={(isCalibrating || isSingleSiteRunning ||!isConnected )}
                 >
-                {(isDiagnosing)?"Stop":"Run"}
+                {(isDiagnosing)?"Stop":"Run All"}
               </Button>            
             </div>
           <DiagnosticButtons onSingleSiteRun={onSingleSiteRun} />
         </Col>
         <Col xs={8}>
-          <LineChart siteData={diagnosticSiteData} />
+          <LineChart siteData={diagnosticSiteData} activeSite={POCReaderController.activeSite} />
         </Col>
       </Row>
       <Row>
