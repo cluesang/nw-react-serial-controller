@@ -34,7 +34,7 @@ const POCSerialPortConnection = ({onConnect, onDisconnect, onError}:iPOCSerialPo
   }
 
   const onSerialPortDisconnect = (result: boolean) => {
-      console.log(result);
+      // console.log(result);
       setSerialConnectionInfo(undefined);
       setIsConnected(false);
       if(onDisconnect) onDisconnect(result);

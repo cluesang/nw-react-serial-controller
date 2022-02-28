@@ -1,3 +1,4 @@
+import { types } from "sinon-chrome";
 import * as enums from "./POC_enums";
 
 export interface iSerialMessage
@@ -32,12 +33,20 @@ export interface iDiagnosticResults {
        intercept: number|undefined;
        r2: number|undefined;
        testDuration:number|undefined;
+       pwm:number|undefined;
+    }
+}
+
+export interface iCalibrationResults {
+    [key: string]: {
+        [key: string]: iDiagnosticResults[];
     }
 }
 
 export interface iDiagnosticRoutineStep {
     loc: string;
 }
+
 export interface iCalibrationRoutineStep {
     prompt: userPrompt;
     steps: iDiagnosticRoutineStep[];

@@ -62,6 +62,7 @@ class POCReaderController extends SerialDeviceController {
     static alreadyRetrying: boolean;
     static enableDiagnosticDataCallback:boolean = true;
     static diagnosticDataCallbackPeriod:number = 400;
+    static onDiagnosticResultsCallback: (results: types.iDiagnosticResults) => void;
 
     static parseMessages(message:types.iSerialMessage)
     {
@@ -92,7 +93,7 @@ class POCReaderController extends SerialDeviceController {
                 {
                     // console.log(message)
                     this.setState(enums.READER_STATE.RUNNING_DIAGNOSTIC);  
-                    console.log(message);  
+                    // console.log(message);  
                     if (message.payload)
                     {
                         if (message.payload.loc)
@@ -108,7 +109,9 @@ class POCReaderController extends SerialDeviceController {
                 {
                     // console.log(message)
                     this.setState(enums.READER_STATE.FINISHED_DIAGNOSTIC);   
-                    this.fitData();
+                    const results = this.fitData();
+                    console.log(results);
+                    this.onDiagnosticResultsCallback(results);
                     this.activeSite = "";
                     if(this.activeRoutine)
                     {
@@ -176,7 +179,7 @@ class POCReaderController extends SerialDeviceController {
         }
     }
 
-    static fitData() 
+    static fitData():types.iDiagnosticResults
     {
         const data = this.diagnosticBuffer[this.activeSite];
         const pairs = data.times.map((time, index) => {
@@ -189,6 +192,8 @@ class POCReaderController extends SerialDeviceController {
         this.siteResults[this.activeSite].intercept = intercept;
         this.siteResults[this.activeSite].r2 = results.r2;
         this.siteResults[this.activeSite].testDuration = data.times[data.times.length-1];
+        this.siteResults[this.activeSite].pwm = this.siteSettings[this.activeSite].pwm;
+        return { [this.activeSite]: this.siteResults[this.activeSite] };
     }
 
     static retryLastReq() 
@@ -198,7 +203,7 @@ class POCReaderController extends SerialDeviceController {
         setTimeout(()=>{
             this.setState(enums.APP_STATE.RETRYING_REQUEST);
             this.req(this.lastReq);
-            console.log("Retrying last request.");
+            // console.log("Retrying last request.");
             this.alreadyRetrying = false;
         },2000);
     }
@@ -256,7 +261,7 @@ class POCReaderController extends SerialDeviceController {
                                                 +this.activeCalibrationRoutine.length;
             userStateMessage = calibrationRoutineMessage+" / "+userStateMessage;
         }
-        console.log("new state: "+state);
+        // console.log("new state: "+state);
         this.stateChangeCallback(state,userStateMessage);
     }
 
@@ -270,6 +275,11 @@ class POCReaderController extends SerialDeviceController {
         this.diagnosticDataCallback = callback;
     }
 
+    static onDiagnosticResults(callback:(results:types.iDiagnosticResults)=>void)
+    {
+        this.onDiagnosticResultsCallback = callback;
+    }
+
     static onUserPrompt(callback:(prompt:types.userPrompt)=>void)
     {
         this.userPromptCallback = callback;
@@ -277,7 +287,7 @@ class POCReaderController extends SerialDeviceController {
 
     static sendUserPrompt(prompt:types.userPrompt)
     {
-        console.log(prompt);
+        // console.log(prompt);
         this.userPromptCallback(prompt);
     }
 
@@ -327,7 +337,7 @@ class POCReaderController extends SerialDeviceController {
                   .filter(line => line.length > 0)
                   .map(line => line.split("\t"))
                   .map(([time,voltage])=>{
-                    console.log(time,voltage);
+                    // console.log(time,voltage);
                     const fTime = parseFloat(time);
                     const fVoltage = parseFloat(voltage);
                     if(!(Number.isNaN(fTime) || Number.isNaN(fVoltage)))
@@ -403,12 +413,7 @@ class POCReaderController extends SerialDeviceController {
             if(this.activeRoutine.length === this.activeRoutineIndex)
             {
                 this.stopRoutine();
-                if(this.activeCalibrationRoutine) 
-                {
-                    this.continueCalibration();
-                } else {
-                    this.setState(enums.APP_STATE.FINISHED_ROUTINE);
-                }
+                if(this.activeCalibrationRoutine) this.continueCalibration();
                 return
             }
 
@@ -417,16 +422,16 @@ class POCReaderController extends SerialDeviceController {
 
             if(!enable)
             {
-                console.log("Skipping step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
+                // console.log("Skipping step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
                 this.activeRoutineIndex += 1;
                 setTimeout(()=>{
                     this.continueRoutine();
                 },1000);                
             } else {
-                console.log("Running step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
+                // console.log("Running step: "+(this.activeRoutineIndex+1)+" of "+this.activeRoutine.length);
                 setTimeout(()=>{
                     if(this.connectionId) this.runDiagnostic(loc,pwm);
-                    console.log("Running site: "+loc+" at a pwm of: "+pwm);
+                    // console.log("Running site: "+loc+" at a pwm of: "+pwm);
                     this.activeRoutineIndex += 1;
                 },1000);
             }
@@ -435,6 +440,15 @@ class POCReaderController extends SerialDeviceController {
 
     static stopRoutine()
     {
+        if(this.activeRoutine)
+        {
+            if(this.activeRoutine.length === this.activeRoutineIndex) 
+            {
+                this.setState(enums.APP_STATE.FINISHED_ROUTINE);
+            } else {
+                this.setState(enums.APP_STATE.CANCELED_ROUTINE);
+            }
+        }
         this.activeRoutine = undefined;
         this.activeRoutineIndex = 0;
         if(this.activeCalibrationRoutine === undefined) this.resetBox();
@@ -454,6 +468,7 @@ class POCReaderController extends SerialDeviceController {
     {
         this.activeCalibrationRoutine = calibrationRoutine;
         this.activeCalibrationRoutineIndex = 0;
+        this.setState(enums.APP_STATE.STARTING_CALIBRATION);
         this.continueCalibration();
     }
 
@@ -467,7 +482,6 @@ class POCReaderController extends SerialDeviceController {
             if(this.activeCalibrationRoutine.length === this.activeCalibrationRoutineIndex)
             {
                 this.stopCalibration();
-                this.setState(enums.APP_STATE.FINISHED_CALIBRATION);
                 return
             }
 
@@ -493,6 +507,7 @@ class POCReaderController extends SerialDeviceController {
         this.activeCalibrationRoutine = undefined;
         this.activeCalibrationRoutineIndex = 0;
         this.stopRoutine();
+        this.setState(enums.APP_STATE.FINISHED_CALIBRATION);
         this.resetBox();
     }
 
@@ -508,8 +523,8 @@ class POCReaderController extends SerialDeviceController {
         {
             const currentPWM = this.siteSettings[site].pwm;
             const newPWM = Math.round(currentPWM*(currentTime/targetTime));
-            console.log("current runtime: "+currentTime+" target runtime: "+targetTime
-                        +" current pwm: "+currentPWM+" new pwm: "+newPWM);
+            // console.log("current runtime: "+currentTime+" target runtime: "+targetTime
+            //             +" current pwm: "+currentPWM+" new pwm: "+newPWM);
             return newPWM;
         } else {
             return undefined;

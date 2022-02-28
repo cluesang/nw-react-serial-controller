@@ -76,51 +76,59 @@ export const siteResults = {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
 ,   "A2": {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
 ,   "A3": {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
 ,   "A4": {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
 ,   "B1": {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
 ,   "B2": {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
 ,   "B3": {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
 ,   "B4": {
         slope: undefined,
         intercept: undefined,
         r2: undefined,
-        testDuration: undefined
+        testDuration: undefined,
+        pwm:undefined
     }
-};
+}; 
 
 export const routine:types.iDiagnosticRoutineStep[] = 
 [

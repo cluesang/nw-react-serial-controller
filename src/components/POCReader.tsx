@@ -18,7 +18,7 @@ import {POCReaderController} from '../controllers/POCReaderController';
 import {APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from "../controllers/POC_enums";
 import * as defaults from "../controllers/POC_defaults";
 import { LineChart } from './charts/Charts';
-import { userPrompt } from '../controllers/IPOCReaderController';
+import { userPrompt, iDiagnosticResults } from '../controllers/IPOCReaderController';
 
 interface iDiagnosticSiteData {
   [key: string]: {
@@ -53,9 +53,11 @@ const ReaderAction = ({action,disabled=false}:iReaderAction) =>
 
 interface iPOCReader
 {
+  onStateChange:(state:string, message:string)=>void;
+  onResults:(results:iDiagnosticResults)=>void;
   onError:(msg:string)=>void;
 }
-const POCReader = ({ onError }:iPOCReader) => {
+const POCReader = ({ onStateChange, onResults, onError }:iPOCReader) => {
 
   const [readerState, setReaderState] = useState(POCReaderController.state as string);
   const [connectionId, setConnectionId] = useState<number>();
@@ -79,7 +81,6 @@ const POCReader = ({ onError }:iPOCReader) => {
 
   const onConnect = (connectionInfo: chrome.serial.ConnectionInfo) =>
   {
-    // console.log(connectionInfo);
     setConnectionId(connectionInfo.connectionId);
     setIsConnected(true);
     POCReaderController.setState(READER_STATE.CONNECTED);
@@ -88,7 +89,7 @@ const POCReader = ({ onError }:iPOCReader) => {
 
   const onDisconnect = (result: boolean) =>
   {
-    console.log(result);
+    // console.log(result);
     setIsConnected(false);
     POCReaderController.setState(READER_STATE.DISCONNECTED);
     POCReaderController.setConnectionId(undefined);
@@ -107,7 +108,7 @@ const POCReader = ({ onError }:iPOCReader) => {
       setIsSingleSiteRunning(false);
     }
     setReaderState(message);
-    // console.log(diagnosticSiteData);
+    onStateChange(state, message);
   }
   POCReaderController.onStateChange(onReaderStateChange);
 
@@ -116,6 +117,8 @@ const POCReader = ({ onError }:iPOCReader) => {
     setDiagnosticSiteData(siteData);
   }
   POCReaderController.onDiagnosticData(onDiagnosticData);
+
+  POCReaderController.onDiagnosticResults(onResults);
 
   const runRoutine = () =>
   {
@@ -126,20 +129,20 @@ const POCReader = ({ onError }:iPOCReader) => {
   const stopRoutine = () =>
   {
     setIsDiagnosing(false);
-    console.log(isDiagnosing);
+    // console.log(isDiagnosing);
     POCReaderController.stopRoutine();
   }
 
   const runCalibration = () =>
   {
-    console.log("run calibration");
+    // console.log("run calibration");
     setIsCalibrating(true);
     POCReaderController.runCalibration();
   }
 
   const promptUser = (userPrompt:userPrompt) =>
   {
-    console.log("user prompt: "+prompt);
+    // console.log("user prompt: "+prompt);
     setUserPrompt(userPrompt);
     setOpenModal(true);
   }
@@ -147,14 +150,13 @@ const POCReader = ({ onError }:iPOCReader) => {
 
   const continueCalibration = () =>
   {
-    console.log("continuing calibration");
+    // console.log("continuing calibration");
     setOpenModal(false);
-    // POCReaderController.runDefaultRoutine()
   }
 
   const stopCalibration = () =>
   {
-    console.log("Stop calibration");
+    // console.log("Stop calibration");
     setOpenModal(false);
     setIsCalibrating(false);
     POCReaderController.stopCalibration();
@@ -176,10 +178,10 @@ const POCReader = ({ onError }:iPOCReader) => {
           </span>
         </Col>
         <Col xs={4} className={"btn btn-group"}>
-           <ReaderAction 
+           {/* <ReaderAction 
               disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
               action={READER_ACTION.INITIALIZE}
-            />
+            /> */}
             <ReaderAction 
               disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
               action={READER_ACTION.BLINK}
@@ -192,14 +194,6 @@ const POCReader = ({ onError }:iPOCReader) => {
               disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
               action={READER_ACTION.RESET}
             />
-          {/* <SerialManager 
-            enableSend={false}
-            enableMonitor={false}
-            onConnect={onConnect}
-            onDisconnect={onDisconnect}
-            onData={onData}
-            onError={onError}
-            /> */}
         </Col>
       </Row>
       <Row>

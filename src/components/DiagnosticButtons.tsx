@@ -36,8 +36,6 @@ const DiagnosticButton = ({
   const [userPWM, setUserPWM] = useState<number>(pwm);
   const [coolDowned, setCoolDowned] = useState<boolean>(true);
 
-  // useEffect(()=>setEnable(!disabled),[disabled]);
-
   const toggleEnable = (event:React.ChangeEvent<HTMLInputElement>) => {
     const enableUpdate = event.target.checked;
     POCReaderController.updateEnable(loc, enableUpdate);
@@ -59,7 +57,7 @@ const DiagnosticButton = ({
       setCoolDowned(false);
       startCoolDownTimer();
     } else {
-      POCReaderController.runDiagnostic(loc,pwm);
+      POCReaderController.runDiagnostic(loc,userPWM);
       setCoolDowned(false);
       startCoolDownTimer();
       onRun(loc);
