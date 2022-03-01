@@ -3,6 +3,7 @@ import * as types from "./IPOCReaderController";
 import * as enums from "./POC_enums";
 import * as defaults from "./POC_defaults";
 import regression from "regression";
+import structuredClone from '@ungap/structured-clone';
 
 function prepDiagnosticRequest(loc:string, pwmValue:number)
 {
@@ -44,26 +45,26 @@ class POCReaderController extends SerialDeviceController {
     static incompleteFlag = false;
     static diagnosticReadingBuffer = "";
     static diagnosticReadingBufferIncompleteFlag = false;
-    static diagnosticBuffer: types.iDiagnosticSiteData = defaults.diagnosticBuffer;
+    static diagnosticBuffer: types.iDiagnosticSiteData = structuredClone(defaults.diagnosticBuffer);
     static activeSite = "";
-    static siteSettings: types.iDiagnosticSiteSettings = defaults.siteSettings;
-    static siteResults: types.iDiagnosticResults = defaults.siteResults;
+    static siteSettings: types.iDiagnosticSiteSettings = structuredClone(defaults.siteSettings);
+    static siteResults: types.iDiagnosticResults = structuredClone(defaults.siteResults);
     
     static activeRoutine:types.iDiagnosticRoutineStep[]|undefined;
     static activeRoutineIndex = 0;
 
     static activeCalibrationRoutine:types.iCalibrationRoutineStep[]|undefined;
     static activeCalibrationRoutineIndex = 0;
-
-    static stateChangeCallback:(state:enums.READER_STATE|enums.APP_STATE, message:string)=>void;
-    static diagnosticDataCallback:(siteData:types.iDiagnosticSiteData)=>void;
-    static userPromptCallback:(prompt:types.iUserPrompt)=>void
     static lastReq: string;
     static alreadyRetrying: boolean;
     static enableDiagnosticDataCallback:boolean = true;
     static diagnosticDataCallbackPeriod:number = 400;
+
     static onDiagnosticResultsCallback: (results: types.iDiagnosticResults) => void;
     static onCalibrationCallback: (results: types.iCalibrationResults) => void;
+    static stateChangeCallback:(state:enums.READER_STATE|enums.APP_STATE, message:string)=>void;
+    static diagnosticDataCallback:(siteData:types.iDiagnosticSiteData)=>void;
+    static userPromptCallback:(prompt:types.iUserPrompt)=>void
 
     static parseMessages(message:types.iSerialMessage)
     {
@@ -101,7 +102,7 @@ class POCReaderController extends SerialDeviceController {
                         {
                             this.activeSite = message.payload.loc;
                             this.diagnosticBuffer[this.activeSite] = 
-                                defaults.diagnosticBuffer[this.activeSite];
+                            structuredClone(defaults.diagnosticBuffer[this.activeSite]);
                         }
                     }
                 }
@@ -414,9 +415,15 @@ class POCReaderController extends SerialDeviceController {
 
     static startRoutine(routine:types.iDiagnosticRoutineStep[])
     {
+        this.siteResults = structuredClone(defaults.siteResults);
+       console.log("Defaults:")
+       console.log(defaults.siteResults);
+       console.log("Controller Values:")
+       console.log(this.siteResults);
+
        this.activeRoutine = routine;
        this.activeRoutineIndex = 0;
-       this.diagnosticBuffer = defaults.diagnosticBuffer;
+       this.diagnosticBuffer = structuredClone(defaults.diagnosticBuffer);
        this.setState(enums.APP_STATE.STARTING_ROUTINE);
        this.continueRoutine();
     }

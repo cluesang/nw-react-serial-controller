@@ -1,6 +1,24 @@
 import * as types from "./IPOCReaderController";
 import * as enums from "./POC_enums";
 
+
+function deepFreeze(object:any) {
+    // Retrieve the property names defined on object
+    const propNames = Object.getOwnPropertyNames(object);
+  
+    // Freeze properties before freezing self
+  
+    for (const name of propNames) {
+      const value = object[name];
+  
+      if (value && typeof value === "object") {
+        deepFreeze(value);
+      }
+    }
+  
+    return Object.freeze(object);
+  }
+
 export const diagnosticBuffer:types.iDiagnosticSiteData = {
     "A1": {
         times: []
@@ -38,35 +56,35 @@ export const diagnosticBuffer:types.iDiagnosticSiteData = {
 
 export const siteSettings = {
     "A1": {
-        pwm: 94,
+        pwm: 255,
         enable: true
     }
 ,   "A2": {
-        pwm: 69,
+        pwm: 255,
         enable: true
     }
 ,   "A3": {
-        pwm: 139,
+        pwm: 255,
         enable: true
     }
 ,   "A4": {
-        pwm: 101,
+        pwm: 255,
         enable: true
     }
 ,   "B1": {
-        pwm: 101,
+        pwm: 255,
         enable: true
     }
 ,   "B2": {
-        pwm: 101,
+        pwm: 255,
         enable: true
     }
 ,   "B3": {
-        pwm: 68,
+        pwm: 255,
         enable: true
     }
 ,   "B4": {
-        pwm: 106,
+        pwm: 255,
         enable: true
     }
 };

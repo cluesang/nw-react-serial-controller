@@ -77,7 +77,7 @@ const LineChart = ({siteData,activeSite="A1"}:iLineChart) =>
   const [datasets, setDatasets] = useState<iGraphData[]>([]);
   const [times, setTimes] = useState<string[]>([]);
   const [voltages, setVoltages] = useState<number[]>([]);
-  const [dim, setDim] = useState<string>("0.25");
+  const [dim, setDim] = useState<string>("0.1");
 
   useEffect(()=>{
 
@@ -95,6 +95,10 @@ const LineChart = ({siteData,activeSite="A1"}:iLineChart) =>
     const time_lables = longestTime.map(time => time.toFixed(2));
     if(siteData["A1"]) setTimes(time_lables);
   },[siteData]);
+
+  useEffect(()=>{
+    setDim((activeSite==="")?"0.85":"0.1");
+  },[activeSite]);
 
   return <Line 
             options={{ 
@@ -159,4 +163,5 @@ const LineChart = ({siteData,activeSite="A1"}:iLineChart) =>
             }} 
           />;
 }
+
 export { LineChart };

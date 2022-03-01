@@ -7,13 +7,15 @@ import {
 , Offcanvas
 , OffcanvasHeader
 , OffcanvasBody 
-, Alert
+, Alert,
+Accordion,
+AccordionHeader,
+AccordionItem
 } from 'reactstrap';
-import { SerialPortList, SerialPortConnection, SerialPortMonitor, SerialReader, SerialSender, SerialManager} from './components/SerialUIComponents';
-import { SerialDeviceController } from './controllers/SerialDeviceController';
 import POCReader from './components/POCReader';
 import * as types from './controllers/IPOCReaderController';
 import * as enums from "./controllers/POC_enums";
+import { CalibrationChart } from './components/charts/BarChart';
 import './App.css';
 
 chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse)=>{
@@ -34,6 +36,10 @@ const App = () => {
 
   const [alertMessage, setAlertMessage] = useState<string | undefined>();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [open, setOpen] = useState('');
+  const toggle = (id:string) => {
+    open === id ? setOpen('') : setOpen(id);
+  };
 
   const [isCalibrating, setIsCalibrating] = useState<boolean>(false);
   const [isInRoutine, setIsInRoutine] = useState<boolean>(false);
@@ -109,6 +115,7 @@ const App = () => {
 
   const onReaderResults = (result:types.iDiagnosticResults) =>
   {
+    console.log(result);
     setResults({...results,...result});
     console.log(results);
   }
@@ -128,7 +135,7 @@ const App = () => {
   return (
     <div className="App">
       <Row>
-          <Col sm={"12"} className={(showNotifications) ? "my-2" : "my-5"}>
+          <Col sm={"8"} className={(showNotifications) ? "my-2" : "my-5"}>
               {(!showNotifications) ? false :
                   <Alert
                       color="info"
@@ -139,34 +146,40 @@ const App = () => {
                   </Alert>}
           </Col>
       </Row>
-      <Row>
-         {/* <SerialManager 
-            enableSend={false}
-            enableMonitor={false}
-            onConnect={onConnect}
-            onDisconnect={onDisconnect}
-            onData={onData}
-            onError={onError}
-            /> */}
-      </Row>
-      <Row>
-        <Col>
-            {()=>JSON.stringify(results)}
-            {(results)?(results["A1"])?results["A1"].slope:false:false}
-        </Col>
-      </Row>
-      <POCReader
-        onStateChange={onReaderStateChange}
-        onResults={onReaderResults}
-        onCalibration={onCalibration}
-        onError={onError} 
-      />
-      <Row>
-        <Col>
-            {()=>JSON.stringify(results)}
-            {(results)?(results["A1"])?results["A1"].slope:false:false}
-        </Col>
-      </Row>
+      <Container>
+        <Row>
+          {/* <SerialManager 
+              enableSend={false}
+              enableMonitor={false}
+              onConnect={onConnect}
+              onDisconnect={onDisconnect}
+              onData={onData}
+              onError={onError}
+              /> */}
+        </Row>
+        <POCReader
+          onStateChange={onReaderStateChange}
+          onResults={onReaderResults}
+          onCalibration={onCalibration}
+          onError={onError} 
+        />
+        <Row>
+          <Col xs={"4"}>
+              <h2>Calibration</h2>
+          </Col>
+          <Col xs={"8"}>
+              <CalibrationChart calibrationData={calibrations} />
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={"4"}>
+              <h2>Diagnostic Results</h2>
+          </Col>
+          <Col xs={"8"}>
+              {/* <BarChart /> */}
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 }
