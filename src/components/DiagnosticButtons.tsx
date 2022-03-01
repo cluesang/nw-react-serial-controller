@@ -34,6 +34,10 @@ const DiagnosticButton = ({
 {
   const [enable, setEnable] = useState<boolean>(!disabled);
   const [userPWM, setUserPWM] = useState<number>(pwm);
+
+  // useEffect(()=>setUserPWM(pwm),[pwm]);
+  // useEffect(()=>setEnable(!disabled),[disabled]);
+
   const [coolDowned, setCoolDowned] = useState<boolean>(true);
 
   const toggleEnable = (event:React.ChangeEvent<HTMLInputElement>) => {
@@ -119,6 +123,7 @@ interface iDiagnosticButtons
 }
 const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) =>
 {
+ 
   const genButtons = () =>
   {
     let buttons = [];
@@ -132,6 +137,7 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
       const isRunningDiagnostic = POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC;
       buttons.push( 
         <DiagnosticButton 
+          key={site+pwm}
           loc={site} 
           pwm={pwm} 
           disabled={!POCReaderController.siteSettings[site].enable}
@@ -144,10 +150,14 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
     }
     return buttons;
   }
+
   let buttons = genButtons();
 
   return (
     <Row xs={2}>
+      {(()=>{
+        buttons = genButtons();
+      })()}
       <Col className='p-0'>
         <ListGroup flush>
           <ListGroupItem>

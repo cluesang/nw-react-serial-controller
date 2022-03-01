@@ -15,7 +15,7 @@ AccordionItem
 import POCReader from './components/POCReader';
 import * as types from './controllers/IPOCReaderController';
 import * as enums from "./controllers/POC_enums";
-import { CalibrationChart } from './components/charts/BarChart';
+import { CalibrationChart, DiagnosticResultsChart } from './components/charts/BarChart';
 import './App.css';
 
 chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse)=>{
@@ -173,10 +173,10 @@ const App = () => {
         </Row>
         <Row>
           <Col xs={"4"}>
-              <h2>Diagnostic Results</h2>
+              <h2>Results</h2>
           </Col>
           <Col xs={"8"}>
-              {/* <BarChart /> */}
+            <DiagnosticResultsChart diagnosticResults={results} />
           </Col>
         </Row>
       </Container>

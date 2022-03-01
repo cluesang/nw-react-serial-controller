@@ -10,7 +10,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
-import { iCalibrationResults } from '../../controllers/IPOCReaderController';
+import { iCalibrationResults, iDiagnosticResults } from '../../controllers/IPOCReaderController';
 
 ChartJS.register(
   CategoryScale,
@@ -59,7 +59,7 @@ export const data = {
 
 interface iBarChart {
     calibrationData: iCalibrationResults|undefined
-  }
+}
 
 const CalibrationChart = ({calibrationData}:iBarChart) =>
 {
@@ -91,7 +91,18 @@ const CalibrationChart = ({calibrationData}:iBarChart) =>
     },[calibrationData]);
 
     return <Bar 
-                options={options} 
+                options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top' as const,
+                      },
+                      title: {
+                        display: true,
+                        text: 'Calibration Results',
+                      },
+                    }
+                  }} 
                 data={{
                     labels,
                     datasets: [
@@ -140,4 +151,52 @@ const CalibrationChart = ({calibrationData}:iBarChart) =>
             />;
 }
 
-export { CalibrationChart };
+
+interface iResultsChart {
+    diagnosticResults: iDiagnosticResults|undefined
+}
+
+const DiagnosticResultsChart = ({diagnosticResults}:iResultsChart) =>
+{
+    const [labels, setLabels] = useState<string[]>();
+    const [slopes, setSlopes] = useState<(number|undefined)[]>([]);
+
+    useEffect(()=>{
+        if(diagnosticResults)
+        {
+            const siteKeys = Object.keys(diagnosticResults);
+            setLabels(siteKeys);
+            // const siteKeys = Object.keys(calibrationData[calibration_slide_labels[0]]);
+            const tempKeyedSlopes:{ [key:string]:(number|undefined)[] } = {}
+            const slopes = siteKeys.map(site => diagnosticResults[site].slope);
+            setSlopes(slopes);
+        }
+    },[diagnosticResults]);
+
+    return <Bar 
+                options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top' as const,
+                      },
+                      title: {
+                        display: true,
+                        text: 'Results',
+                      },
+                    },
+                  }} 
+                data={{
+                    labels,
+                    datasets: [
+                      {
+                        label: 'Results',
+                        data: slopes,
+                        backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                      }
+                    ],
+                  }} 
+            />;
+}
+
+export { CalibrationChart, DiagnosticResultsChart };

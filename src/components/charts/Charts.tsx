@@ -104,7 +104,13 @@ const LineChart = ({siteData,activeSite="A1"}:iLineChart) =>
             options={{ 
               maintainAspectRatio: false, 
               animation: false,
-              onResize: (ref)=>{ref.render()}
+              onResize: (ref)=>{ref.render()},
+              scales: {
+                  yAxis: {
+                      min: 0,
+                      max: 5
+                  }
+              }
             }} 
             width={"100%"}
             height={"100%"}
