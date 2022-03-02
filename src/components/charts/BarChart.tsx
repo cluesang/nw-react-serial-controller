@@ -11,6 +11,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { iCalibrationResults, iDiagnosticResults } from '../../controllers/IPOCReaderController';
+import * as enums from "../../controllers/POC_enums";
 
 ChartJS.register(
   CategoryScale,
@@ -63,14 +64,14 @@ interface iBarChart {
 
 const CalibrationChart = ({calibrationData}:iBarChart) =>
 {
-    const [labels, setLabels] = useState<string[]>();
+    const calibrations_ids = Object.entries(enums.CALIBRATIONS).map(calibration => calibration[0]);
+    const [labels, setLabels] = useState<string[]>(calibrations_ids);
     const [slopes, setSlopes] = useState<{ [key:string]:(number|undefined)[] }>();
 
     useEffect(()=>{
         if(calibrationData)
         {
             const calibration_slide_labels = Object.keys(calibrationData);
-            setLabels(calibration_slide_labels);
             const siteKeys = Object.keys(calibrationData[calibration_slide_labels[0]]);
             const tempKeyedSlopes:{ [key:string]:(number|undefined)[] } = {}
             siteKeys.map((site)=>{
@@ -158,7 +159,8 @@ interface iResultsChart {
 
 const DiagnosticResultsChart = ({diagnosticResults}:iResultsChart) =>
 {
-    const [labels, setLabels] = useState<string[]>();
+    const siteNames = Object.entries(enums.READER_SITES).map(site => site[0]);
+    const [labels, setLabels] = useState<string[]>(siteNames);
     const [slopes, setSlopes] = useState<(number|undefined)[]>([]);
 
     useEffect(()=>{

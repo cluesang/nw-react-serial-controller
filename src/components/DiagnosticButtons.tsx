@@ -7,7 +7,8 @@ import {
 , Button
 , Input
 , Form,
-FormGroup
+FormGroup,
+Label
 } from 'reactstrap';
 import {POCReaderController} from '../controllers/POCReaderController';
 import {APP_STATE, READER_STATE, READER_ACTION, READER_SITES} from "../controllers/POC_enums";
@@ -57,7 +58,7 @@ const DiagnosticButton = ({
   {
     if(isActive)
     {
-      POCReaderController.resetBox();
+      POCReaderController.stopDiagnostic(loc);
       setCoolDowned(false);
       startCoolDownTimer();
     } else {
@@ -123,7 +124,12 @@ interface iDiagnosticButtons
 }
 const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) =>
 {
- 
+  const [enableSliders, setEnableSliders] = useState<boolean>(true);
+  const [isRunningDiagnostic, setIsRunningDiagnostic] = useState<boolean>(POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC);
+
+  useEffect(()=>{
+    setIsRunningDiagnostic(POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC);
+  },[POCReaderController.state])
   const genButtons = () =>
   {
     let buttons = [];
@@ -134,14 +140,14 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
                         && !(POCReaderController.state === READER_STATE.DISCONNECTED));
       const pwm = POCReaderController.siteSettings[site].pwm;
       const isActive = POCReaderController.activeSite === site;
-      const isRunningDiagnostic = POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC;
+      // const isRunningDiagnostic = POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC;
       buttons.push( 
         <DiagnosticButton 
           key={site+pwm}
           loc={site} 
           pwm={pwm} 
           disabled={!POCReaderController.siteSettings[site].enable}
-          manualMode={manualMode}
+          manualMode={manualMode&&enableSliders}
           isActive={isActive}
           isRunningDiagnostic={isRunningDiagnostic}
           onRun={onSingleSiteRun}
@@ -154,10 +160,23 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
   let buttons = genButtons();
 
   return (
+    <>
+    <FormGroup switch>
+      <div className='d-flex justify-content-start align-items-center mx-4'>
+          <Input 
+            type={"switch"}
+            className={"my-2"}
+            checked={enableSliders}
+            onChange={()=>setEnableSliders(!enableSliders)}
+            disabled={isRunningDiagnostic}
+            style={{ width: "2.5em", height: "1.5em" }}
+            />
+            <Label className='m-2'>
+              Manual Mode
+            </Label>
+      </div>
+    </FormGroup>
     <Row xs={2}>
-      {(()=>{
-        buttons = genButtons();
-      })()}
       <Col className='p-0'>
         <ListGroup flush>
           <ListGroupItem>
@@ -191,6 +210,7 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
         </ListGroup>
       </Col>
     </Row>
+    </>
   )
 }
 

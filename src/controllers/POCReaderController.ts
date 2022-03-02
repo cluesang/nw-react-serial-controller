@@ -399,6 +399,13 @@ class POCReaderController extends SerialDeviceController {
         }
     }
 
+    static stopDiagnostic(loc:string)
+    {
+        this.resetBox();
+        this.diagnosticBuffer[loc].times = [];
+        this.diagnosticBuffer[loc].voltages = [];
+    }
+
     static reset()
     {
         this.activeSite = "";

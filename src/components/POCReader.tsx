@@ -193,7 +193,7 @@ const POCReader = ({ onStateChange, onResults, onCalibration, onError }:iPOCRead
               action={READER_ACTION.GET_METADATA}
             />
             <ReaderAction 
-              disabled={isCalibrating||isDiagnosing||isSingleSiteRunning||!isConnected} 
+              disabled={!isConnected} 
               action={READER_ACTION.RESET}
             />
         </Col>
@@ -213,7 +213,7 @@ const POCReader = ({ onStateChange, onResults, onCalibration, onError }:iPOCRead
                 color={(isDiagnosing)?"warning":"primary"}
                 disabled={(isCalibrating || isSingleSiteRunning ||!isConnected )}
                 >
-                {(isDiagnosing)?"Stop":"Run All"}
+                {(isDiagnosing)?"Stop":"Run Diagnostic"}
               </Button>            
             </div>
           <DiagnosticButtons onSingleSiteRun={onSingleSiteRun} />
