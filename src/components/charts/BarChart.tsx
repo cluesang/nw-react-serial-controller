@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { iCalibrationResults, iDiagnosticResults } from '../../controllers/IPOCReaderController';
 import * as enums from "../../controllers/POC_enums";
@@ -91,7 +91,7 @@ const CalibrationChart = ({calibrationData}:iBarChart) =>
         }
     },[calibrationData]);
 
-    return <Bar 
+    return <Line 
                 options={{
                     responsive: true,
                     plugins: {
@@ -101,6 +101,14 @@ const CalibrationChart = ({calibrationData}:iBarChart) =>
                       title: {
                         display: true,
                         text: 'Calibration Results',
+                      },
+                    },
+                    scales: {
+                      y: {
+                        title: {
+                          display:true,
+                          text: "Integration Time [s]"
+                        }
                       },
                     }
                   }} 
@@ -187,6 +195,14 @@ const DiagnosticResultsChart = ({diagnosticResults}:iResultsChart) =>
                         text: 'Results',
                       },
                     },
+                    scales: {
+                      y: {
+                        title: {
+                          display:true,
+                          text: "Slope [dV/dt]"
+                        }
+                      },
+                    }
                   }} 
                 data={{
                     labels,

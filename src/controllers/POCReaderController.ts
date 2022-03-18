@@ -353,7 +353,6 @@ class POCReaderController extends SerialDeviceController {
                   .filter(line => line.length > 0)
                   .map(line => line.split("\t"))
                   .map(([time,voltage])=>{
-                    // console.log(time,voltage);
                     const fTime = parseFloat(time);
                     const fVoltage = parseFloat(voltage);
                     if(!(Number.isNaN(fTime) || Number.isNaN(fVoltage)))
@@ -422,7 +421,7 @@ class POCReaderController extends SerialDeviceController {
 
     static startRoutine(routine:types.iDiagnosticRoutineStep[])
     {
-        this.siteResults = structuredClone(defaults.siteResults);
+       this.siteResults = structuredClone(defaults.siteResults);
        console.log("Defaults:")
        console.log(defaults.siteResults);
        console.log("Controller Values:")
@@ -574,7 +573,7 @@ class POCReaderController extends SerialDeviceController {
         {
             if(this.siteSettings[site].enable)
             {
-                const newPWM = this.adjustSitePWMValue(site,enums.TARGET_TIME.t30);
+                const newPWM = this.adjustSitePWMValue(site,enums.TARGET_TIME.t10);
                 if(newPWM) this.siteSettings[site].pwm = newPWM;
             }
         }

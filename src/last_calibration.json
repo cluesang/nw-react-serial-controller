@@ -1,0 +1,350 @@
+{
+    "CALIBRATION_SLIDE_5": {
+        "A1": {
+            "slope": 0.53,
+            "intercept": 0.15,
+            "r2": 1,
+            "testDuration": 8.84,
+            "pwm": 255
+        },
+        "A2": {
+            "slope": 0.65,
+            "intercept": 0.17,
+            "r2": 1,
+            "testDuration": 7.18,
+            "pwm": 255
+        },
+        "A3": {
+            "slope": 0.37,
+            "intercept": 0.2,
+            "r2": 1,
+            "testDuration": 12.7,
+            "pwm": 255
+        },
+        "A4": {
+            "slope": 0.51,
+            "intercept": 0.21,
+            "r2": 1,
+            "testDuration": 9.2,
+            "pwm": 255
+        },
+        "B1": {
+            "slope": 0.47,
+            "intercept": 0.21,
+            "r2": 1,
+            "testDuration": 9.94,
+            "pwm": 255
+        },
+        "B2": {
+            "slope": 0.48,
+            "intercept": 0.13,
+            "r2": 1,
+            "testDuration": 9.85,
+            "pwm": 255
+        },
+        "B3": {
+            "slope": 0.67,
+            "intercept": 0.2,
+            "r2": 1,
+            "testDuration": 7,
+            "pwm": 255
+        },
+        "B4": {
+            "slope": 0.5,
+            "intercept": 0.18,
+            "r2": 1,
+            "testDuration": 9.48,
+            "pwm": 255
+        }
+    },
+    "CALIBRATION_SLIDE_4": {
+        "A1": {
+            "slope": 1.04,
+            "intercept": 0.16,
+            "r2": 1,
+            "testDuration": 4.51,
+            "pwm": 225
+        },
+        "A2": {
+            "slope": 1.12,
+            "intercept": 0.16,
+            "r2": 1,
+            "testDuration": 4.14,
+            "pwm": 183
+        },
+        "A3": {
+            "slope": 1.09,
+            "intercept": 0.22,
+            "r2": 1,
+            "testDuration": 4.24,
+            "pwm": 324
+        },
+        "A4": {
+            "slope": 1.06,
+            "intercept": 0.22,
+            "r2": 1,
+            "testDuration": 4.42,
+            "pwm": 235
+        },
+        "B1": {
+            "slope": 1.1,
+            "intercept": 0.21,
+            "r2": 1,
+            "testDuration": 4.24,
+            "pwm": 253
+        },
+        "B2": {
+            "slope": 1.11,
+            "intercept": 0.16,
+            "r2": 1,
+            "testDuration": 4.24,
+            "pwm": 251
+        },
+        "B3": {
+            "slope": 1.12,
+            "intercept": 0.2,
+            "r2": 1,
+            "testDuration": 4.14,
+            "pwm": 179
+        },
+        "B4": {
+            "slope": 1.08,
+            "intercept": 0.22,
+            "r2": 1,
+            "testDuration": 4.33,
+            "pwm": 242
+        }
+    },
+    "CALIBRATION_SLIDE_3": {
+        "A1": {
+            "slope": 2.03,
+            "intercept": 0.18,
+            "r2": 1,
+            "testDuration": 2.3,
+            "pwm": 225
+        },
+        "A2": {
+            "slope": 2.04,
+            "intercept": 0.18,
+            "r2": 1,
+            "testDuration": 2.3,
+            "pwm": 183
+        },
+        "A3": {
+            "slope": 2.04,
+            "intercept": 0.25,
+            "r2": 1,
+            "testDuration": 2.21,
+            "pwm": 324
+        },
+        "A4": {
+            "slope": 2.05,
+            "intercept": 0.24,
+            "r2": 1,
+            "testDuration": 2.21,
+            "pwm": 235
+        },
+        "B1": {
+            "slope": 2.19,
+            "intercept": 0.22,
+            "r2": 1,
+            "testDuration": 2.12,
+            "pwm": 253
+        },
+        "B2": {
+            "slope": 2,
+            "intercept": 0.18,
+            "r2": 1,
+            "testDuration": 2.3,
+            "pwm": 251
+        },
+        "B3": {
+            "slope": 2.07,
+            "intercept": 0.22,
+            "r2": 1,
+            "testDuration": 2.21,
+            "pwm": 179
+        },
+        "B4": {
+            "slope": 1.96,
+            "intercept": 0.22,
+            "r2": 1,
+            "testDuration": 2.4,
+            "pwm": 242
+        }
+    },
+    "CALIBRATION_SLIDE_2": {
+        "A1": {
+            "slope": 4.58,
+            "intercept": 0.2,
+            "r2": 1,
+            "testDuration": 1.01,
+            "pwm": 225
+        },
+        "A2": {
+            "slope": 4.84,
+            "intercept": 0.2,
+            "r2": 1,
+            "testDuration": 0.92,
+            "pwm": 183
+        },
+        "A3": {
+            "slope": 4.54,
+            "intercept": 0.25,
+            "r2": 1,
+            "testDuration": 1.01,
+            "pwm": 324
+        },
+        "A4": {
+            "slope": 4.64,
+            "intercept": 0.25,
+            "r2": 1,
+            "testDuration": 0.92,
+            "pwm": 235
+        },
+        "B1": {
+            "slope": 4.84,
+            "intercept": 0.23,
+            "r2": 1,
+            "testDuration": 0.92,
+            "pwm": 253
+        },
+        "B2": {
+            "slope": 4.48,
+            "intercept": 0.2,
+            "r2": 1,
+            "testDuration": 1.01,
+            "pwm": 251
+        },
+        "B3": {
+            "slope": 4.65,
+            "intercept": 0.24,
+            "r2": 1,
+            "testDuration": 0.92,
+            "pwm": 179
+        },
+        "B4": {
+            "slope": 4.46,
+            "intercept": 0.23,
+            "r2": 1,
+            "testDuration": 1.01,
+            "pwm": 242
+        }
+    },
+    "CALIBRATION_SLIDE_1": {
+        "A1": {
+            "slope": 9.33,
+            "intercept": 0.21,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 225
+        },
+        "A2": {
+            "slope": 9.85,
+            "intercept": 0.22,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 183
+        },
+        "A3": {
+            "slope": 9.39,
+            "intercept": 0.26,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 324
+        },
+        "A4": {
+            "slope": 9.65,
+            "intercept": 0.26,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 235
+        },
+        "B1": {
+            "slope": 9.92,
+            "intercept": 0.24,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 253
+        },
+        "B2": {
+            "slope": 9.23,
+            "intercept": 0.2,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 251
+        },
+        "B3": {
+            "slope": 9.92,
+            "intercept": 0.25,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 179
+        },
+        "B4": {
+            "slope": 9.4,
+            "intercept": 0.24,
+            "r2": 1,
+            "testDuration": 0.46,
+            "pwm": 242
+        }
+    },
+    "CALIBRATION_SLIDE_0": {
+        "A1": {
+            "slope": 20.24,
+            "intercept": 0.26,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 225
+        },
+        "A2": {
+            "slope": 20.19,
+            "intercept": 0.27,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 183
+        },
+        "A3": {
+            "slope": 19.24,
+            "intercept": 0.29,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 324
+        },
+        "A4": {
+            "slope": 20.08,
+            "intercept": 0.31,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 235
+        },
+        "B1": {
+            "slope": 20.71,
+            "intercept": 0.28,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 253
+        },
+        "B2": {
+            "slope": 18.56,
+            "intercept": 0.27,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 251
+        },
+        "B3": {
+            "slope": 20.29,
+            "intercept": 0.27,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 179
+        },
+        "B4": {
+            "slope": 19.24,
+            "intercept": 0.27,
+            "r2": 1,
+            "testDuration": 0.19,
+            "pwm": 242
+        }
+    }
+}

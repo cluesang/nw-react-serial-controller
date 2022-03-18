@@ -108,7 +108,12 @@ const LineChart = ({siteData,activeSite="A1"}:iLineChart) =>
               scales: {
                   yAxis: {
                       min: 0,
-                      max: 5
+                      max: 5,
+                      title:
+                      {
+                        display:true,
+                      text: "Slope [dV/dt]"
+                      }
                   }
               }
             }} 

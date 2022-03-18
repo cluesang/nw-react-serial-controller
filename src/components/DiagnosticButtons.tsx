@@ -35,10 +35,6 @@ const DiagnosticButton = ({
 {
   const [enable, setEnable] = useState<boolean>(!disabled);
   const [userPWM, setUserPWM] = useState<number>(pwm);
-
-  // useEffect(()=>setUserPWM(pwm),[pwm]);
-  // useEffect(()=>setEnable(!disabled),[disabled]);
-
   const [coolDowned, setCoolDowned] = useState<boolean>(true);
 
   const toggleEnable = (event:React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +92,8 @@ const DiagnosticButton = ({
             style={{ width: "65px" }}
             className={"text-end"}
             value={userPWM}
-            disabled={true}
+            disabled={!manualMode}
+            onChange={(evt)=>handlePWMChange(evt)} 
           />
         </div>
       </Form>
@@ -124,20 +121,34 @@ interface iDiagnosticButtons
 }
 const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) =>
 {
-  const [enableSliders, setEnableSliders] = useState<boolean>(true);
-  const [isRunningDiagnostic, setIsRunningDiagnostic] = useState<boolean>(POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC);
+  const [enableSliders, setEnableSliders] = useState<boolean>(false);
+  const [isRunningDiagnostic, setIsRunningDiagnostic] = useState<boolean>(
+    POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC
+    );
+  const [isDisconnected, setIsDisconnected] = useState<boolean>(
+    POCReaderController.state === READER_STATE.DISCONNECTED
+  );
 
+  const [isNotBusy, setIsNotBusy] = useState<boolean>(
+    POCReaderController.activeRoutine === undefined
+    && POCReaderController.activeCalibrationRoutine === undefined
+  );
+  
   useEffect(()=>{
     setIsRunningDiagnostic(POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC);
+    setIsDisconnected(POCReaderController.state === READER_STATE.DISCONNECTED);
+    setIsNotBusy(
+      POCReaderController.activeRoutine === undefined
+      && POCReaderController.activeCalibrationRoutine === undefined
+    );
+    // buttons = genButtons();
   },[POCReaderController.state])
+
   const genButtons = () =>
   {
     let buttons = [];
     for (const site in READER_SITES)
     {                      
-      const manualMode = (POCReaderController.activeRoutine === undefined
-                        && POCReaderController.activeCalibrationRoutine === undefined
-                        && !(POCReaderController.state === READER_STATE.DISCONNECTED));
       const pwm = POCReaderController.siteSettings[site].pwm;
       const isActive = POCReaderController.activeSite === site;
       // const isRunningDiagnostic = POCReaderController.state === READER_STATE.RUNNING_DIAGNOSTIC;
@@ -147,7 +158,7 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
           loc={site} 
           pwm={pwm} 
           disabled={!POCReaderController.siteSettings[site].enable}
-          manualMode={manualMode&&enableSliders}
+          manualMode={isNotBusy&&enableSliders&&!isDisconnected}
           isActive={isActive}
           isRunningDiagnostic={isRunningDiagnostic}
           onRun={onSingleSiteRun}
@@ -156,24 +167,43 @@ const DiagnosticButtons = ({onSingleSiteRun,disabled=false}:iDiagnosticButtons) 
     }
     return buttons;
   }
-
   let buttons = genButtons();
+
+  const defaultPWMValues = () =>
+  {
+    for (const site in READER_SITES)
+    {                      
+      POCReaderController.siteSettings[site].pwm = 255;
+    }
+    // buttons = genButtons();
+    setEnableSliders(!enableSliders);
+  }
 
   return (
     <>
     <FormGroup switch>
-      <div className='d-flex justify-content-start align-items-center mx-4'>
-          <Input 
-            type={"switch"}
-            className={"my-2"}
-            checked={enableSliders}
-            onChange={()=>setEnableSliders(!enableSliders)}
-            disabled={isRunningDiagnostic}
-            style={{ width: "2.5em", height: "1.5em" }}
-            />
-            <Label className='m-2'>
-              Manual Mode
-            </Label>
+      <div className='d-flex justify-content-between align-items-center mx-4'>
+          <div>
+            <Input 
+              type={"switch"}
+              className={"my-2"}
+              checked={enableSliders}
+              onChange={()=>setEnableSliders(!enableSliders)}
+              disabled={isRunningDiagnostic||isDisconnected}
+              style={{ width: "2.5em", height: "1.5em" }}
+              />
+              <Label className='m-2'>
+                Manual Mode
+              </Label>
+          </div>
+            <Button
+              color={"warning"}
+              disabled={(!(enableSliders&&isNotBusy))||isDisconnected}
+              onClick={()=>defaultPWMValues()}
+              size={"sm"}
+            >
+              Restore Defaults 
+            </Button>
       </div>
     </FormGroup>
     <Row xs={2}>
