@@ -11,71 +11,14 @@ FormText,
 Input,
 Label
 } from 'reactstrap';
-import regression from "regression";
+import { iExponentialFits, iDxResult } from './Types';
+import { expoFitCalibrations, flattenCalibrationObjectData } from './Utilities';
 import { SerialManager } from './components/SerialUIComponents';
 import POCReader from './components/POCReader';
 import * as types from './controllers/IPOCReaderController';
 import * as enums from "./controllers/POC_enums";
 import { CalibrationChart, DiagnosticResultsChart } from './components/charts/BarChart';
 import './App.css';
-
-interface iExponentialFits {
-  site:string;
-  coeff: {
-    a: number;
-    b: number;
-  }
-}
-
-const expoFitCalibrations = (calibrations:types.iCalibrationResults) =>
-{
-  let dataPoints:{ [site:string]:regression.DataPoint[] } = {};
-    // let expCoefs:{}
-    Object.entries(calibrations).map(([slide, results])=>{
-      Object.entries(results).map(([site, result])=>{
-        const {slope, intercept, r2, testDuration, pwm} = result;
-        const stopIndex = slide.substring(slide.length-1);
-        const stopLevel = parseInt(stopIndex,10);
-        if(slope && testDuration)
-        {
-          const dataPoint:regression.DataPoint = [stopLevel, testDuration];
-          if(!dataPoints[site]) dataPoints[site] = [];
-          console.log(dataPoint);
-          dataPoints[site].push(dataPoint);
-        }
-      });
-    });
-    console.log(dataPoints);
-    const fits:iExponentialFits[] = Object.entries(dataPoints).map(([site, points])=>{
-      const fit = regression.exponential(points);
-      console.log(fit);
-      return {
-        site: site,
-        coeff: {
-          a: fit.equation[0],
-          b: fit.equation[1]
-        }
-      }
-    });
-    return fits
-}
-
-const flattenCalibrationObjectData = (calibrations:types.iCalibrationResults) =>
-{    
-  const flattenedResults = Object.entries(calibrations).map(([slide, results])=>{
-    return Object.entries(results).map(([site, result])=>{
-      const stopIndex = slide.substring(slide.length-1);
-      const stopLevel = parseInt(stopIndex,10);
-      return {
-        slide_no: slide,
-        stop_Level: stopLevel,
-        site_id: site,
-        ...result
-      }
-    });
-  });
-  return flattenedResults;
-}
 
 const App = () => {
 
@@ -90,6 +33,8 @@ const App = () => {
   const [calibrations, setCalibrations] = useState<types.iCalibrationResults>();
  
   const [expoFits, setExpoFits] = useState<iExponentialFits[]>([]);
+
+  const [dxResults, setDxResults] = useState<iDxResult[]>();
 
   const toggleNotification = () => setShowNotifications(!showNotifications);
 
@@ -135,6 +80,66 @@ const App = () => {
       case enums.APP_STATE.FINISHED_ROUTINE:
         {
           setIsInRoutine(false);
+          if(results)
+          {
+            const calibrationFitsObject:any = {};
+
+            expoFits.map((fit)=>{
+              calibrationFitsObject[fit.site] = {
+                a: fit.coeff.a,
+                b: fit.coeff.b
+              }
+            });
+            console.log(calibrationFitsObject);
+
+            const newDxResult:iDxResult = {
+              PatientID: "default Patient ID"
+            , timeStamp: "default timestamp"
+            , Box_ID: "get box id from box"
+            , recommendation: "generate recommendation"
+            , A1: results["A1"].slope
+            , A2: results["A2"].slope
+            , A3: results["A3"].slope
+            , A4: results["A4"].slope
+            , B1: results["B1"].slope
+            , B2: results["B2"].slope
+            , B3: results["B3"].slope
+            , B4: results["B4"].slope
+          
+            , Calibration_A1_pwm: results["A1"].pwm
+            , Calibration_A2_pwm: results["A2"].pwm
+            , Calibration_A3_pwm: results["A3"].pwm
+            , Calibration_A4_pwm: results["A4"].pwm
+            , Calibration_B1_pwm: results["B1"].pwm
+            , Calibration_B2_pwm: results["B2"].pwm
+            , Calibration_B3_pwm: results["B3"].pwm
+            , Calibration_B4_pwm: results["B4"].pwm
+          
+            , Calibration_A1_coeff_a: calibrationFitsObject["A1"].a||undefined
+            , Calibration_A2_coeff_a: calibrationFitsObject["A2"].a||undefined
+            , Calibration_A3_coeff_a: calibrationFitsObject["A3"].a||undefined
+            , Calibration_A4_coeff_a: calibrationFitsObject["A4"].a||undefined
+            , Calibration_B1_coeff_a: calibrationFitsObject["B1"].a||undefined
+            , Calibration_B2_coeff_a: calibrationFitsObject["B2"].a||undefined
+            , Calibration_B3_coeff_a: calibrationFitsObject["B3"].a||undefined
+            , Calibration_B4_coeff_a: calibrationFitsObject["B4"].a||undefined
+            
+            , Calibration_A1_coeff_b: calibrationFitsObject["A1"].b ||undefined
+            , Calibration_A2_coeff_b: calibrationFitsObject["A2"].b ||undefined
+            , Calibration_A3_coeff_b: calibrationFitsObject["A3"].b ||undefined
+            , Calibration_A4_coeff_b: calibrationFitsObject["A4"].b ||undefined
+            , Calibration_B1_coeff_b: calibrationFitsObject["B1"].b ||undefined
+            , Calibration_B2_coeff_b: calibrationFitsObject["B2"].b ||undefined
+            , Calibration_B3_coeff_b: calibrationFitsObject["B3"].b ||undefined
+            , Calibration_B4_coeff_b: calibrationFitsObject["B4"].b ||undefined
+            }
+            if(dxResults) {
+              setDxResults([...dxResults,newDxResult]);
+            } else {
+              setDxResults([newDxResult]);
+            }
+            console.log(dxResults);
+          }
         }
         break;
       case enums.APP_STATE.CANCELED_ROUTINE:
@@ -150,6 +155,9 @@ const App = () => {
       case enums.READER_STATE.FINISHED_DIAGNOSTIC:
         {
           setIsDiagonsing(false);
+          // take results
+          // take calibration data
+          // and reate a DxResults object
         }
         break;
       case enums.READER_STATE.GETTING_METADATA:
@@ -251,7 +259,7 @@ const App = () => {
                   onChange={(e)=>onLoadCalibration(e.target.files)}
                 />
                 <FormText>
-                  This is some placeholder block-level help text for the above input. It's a bit lighter and easily wraps to a new line.
+                  Load previously saved calibration values.
                 </FormText>
               </FormGroup>
               {(expoFits)?
@@ -266,7 +274,7 @@ const App = () => {
         </Row>
         <Row>
           <Col xs={"4"}>
-              <h2>Results</h2>
+              <h2>Last Result</h2>
               {(results)?
                 Object.entries(results).map(([site, {slope}], index)=>{
                   return <div key={index} >{site}: slope: {slope}</div>
@@ -275,6 +283,16 @@ const App = () => {
           </Col>
           <Col xs={"8"}>
             <DiagnosticResultsChart diagnosticResults={results} />
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={"12"} className={""}>
+            <h2>Results</h2>
+            {(dxResults)?
+              dxResults.map(({PatientID,timeStamp,recommendation,A1,A2,A3,A4,B1,B2,B3,B4}, index)=>{
+                return <div key={index} >{PatientID}: {recommendation}</div>
+              })
+            :false}
           </Col>
         </Row>
       </Container>
