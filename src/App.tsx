@@ -105,6 +105,15 @@ const App = () => {
             , B2: results["B2"].slope
             , B3: results["B3"].slope
             , B4: results["B4"].slope
+
+            , A1_r2: results["A1"].r2
+            , A2_r2: results["A2"].r2
+            , A3_r2: results["A3"].r2
+            , A4_r2: results["A4"].r2
+            , B1_r2: results["B1"].r2
+            , B2_r2: results["B2"].r2
+            , B3_r2: results["B3"].r2
+            , B4_r2: results["B4"].r2
           
             , Calibration_A1_pwm: results["A1"].pwm
             , Calibration_A2_pwm: results["A2"].pwm
@@ -132,6 +141,15 @@ const App = () => {
             , Calibration_B2_coeff_b: calibrationFitsObject["B2"].b ||undefined
             , Calibration_B3_coeff_b: calibrationFitsObject["B3"].b ||undefined
             , Calibration_B4_coeff_b: calibrationFitsObject["B4"].b ||undefined
+
+            , Calibration_A1_r2: calibrationFitsObject["A1"].r2 || undefined
+            , Calibration_A2_r2: calibrationFitsObject["A2"].r2 || undefined
+            , Calibration_A3_r2: calibrationFitsObject["A3"].r2 || undefined
+            , Calibration_A4_r2: calibrationFitsObject["A4"].r2 || undefined
+            , Calibration_B1_r2: calibrationFitsObject["B1"].r2 || undefined
+            , Calibration_B2_r2: calibrationFitsObject["B2"].r2 || undefined
+            , Calibration_B3_r2: calibrationFitsObject["B3"].r2 || undefined
+            , Calibration_B4_r2: calibrationFitsObject["B4"].r2 || undefined
             }
             if(dxResults) {
               setDxResults([...dxResults,newDxResult]);

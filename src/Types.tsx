@@ -4,7 +4,8 @@ export interface iExponentialFits {
     coeff: {
       a: number;
       b: number;
-    }
+    },
+    r2:number;
   }
   
 export interface iDxResult {
@@ -21,6 +22,15 @@ export interface iDxResult {
     B2:number|undefined;
     B3:number|undefined;
     B4:number|undefined;
+
+    A1_r2:number|undefined;
+    A2_r2:number|undefined;
+    A3_r2:number|undefined;
+    A4_r2:number|undefined;
+    B1_r2:number|undefined;
+    B2_r2:number|undefined;
+    B3_r2:number|undefined;
+    B4_r2:number|undefined;
   
     Calibration_A1_pwm:number|undefined;
     Calibration_A2_pwm:number|undefined;
@@ -48,4 +58,13 @@ export interface iDxResult {
     Calibration_B2_coeff_b:number|undefined;
     Calibration_B3_coeff_b:number|undefined;
     Calibration_B4_coeff_b:number|undefined;
+
+    Calibration_A1_r2:number|undefined;
+    Calibration_A2_r2:number|undefined;
+    Calibration_A3_r2:number|undefined;
+    Calibration_A4_r2:number|undefined;
+    Calibration_B1_r2:number|undefined;
+    Calibration_B2_r2:number|undefined;
+    Calibration_B3_r2:number|undefined;
+    Calibration_B4_r2:number|undefined;
   }

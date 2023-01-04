@@ -29,7 +29,8 @@ export const expoFitCalibrations = (calibrations:types.iCalibrationResults) =>
         coeff: {
           a: fit.equation[0],
           b: fit.equation[1]
-        }
+        },
+        r2: fit.r2
       }
     });
     return fits
